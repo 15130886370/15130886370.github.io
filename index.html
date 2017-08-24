@@ -151,27 +151,309 @@
           <div id="js-content" class="content-ll">
             
   
-    <article id="post-“HelloWorld”" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-1" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/08/24/“HelloWorld”/">“HelloWorld”</a>
-    </h1>
-  
-
-        
-        <a href="/2017/08/24/“HelloWorld”/" class="archive-article-date">
-  	<time datetime="2017-08-24T07:39:36.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-08-24</time>
-</a>
-        
-      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h4 id="我的老家，就住在这个屯"><a href="#我的老家，就住在这个屯" class="headerlink" title="我的老家，就住在这个屯"></a>我的老家，就住在这个屯</h4>
+        <!DOCTYPE html><html>
+
+<head>
+<meta charset="utf-8">
+<title># 填坑记,Swift集成WeexSDK</title>
+<style>
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote {
+    margin: 0;
+    padding: 0;
+}
+body {
+    font-family: "Helvetica Neue", Helvetica, "Hiragino Sans GB", Arial, sans-serif;
+    font-size: 14px;
+    line-height: 18px;
+    color: #fff;
+    background-color: #282a36;
+    margin: 20px;
+}
+table {
+	margin: 10px 0 15px 0;
+	border-collapse: collapse;
+}
+td,th {	
+	border: 1px solid #ddd;
+	padding: 3px 10px;
+}
+th {
+	padding: 5px 10px;	
+}
+a {
+    color: #59acf3;word-wrap: break-word; word-break: break-all;
+}
+a:hover {
+    color: #a7d8ff;
+    text-decoration: none;
+}
+a img {
+    border: none;
+}
+img{max-width: 100%;}
+p {
+    margin-bottom: 9px;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+    color: #fff;
+    line-height: 36px;
+}
+h1 {
+    margin-bottom: 18px;
+    font-size: 26px;
+}
+h2 {
+    font-size: 22px;
+}
+h3 {
+    font-size: 18px;
+}
+h4 {
+    font-size: 16px;
+}
+h5 {
+    font-size: 14px;
+}
+h6 {
+    font-size: 13px;
+}
+hr {
+    margin: 0 0 19px;
+    border: 0;
+    border-bottom: 1px solid #ccc;
+}
+blockquote {
+    padding: 13px 13px 21px 15px;
+    margin-bottom: 18px;
+    font-family:georgia,serif;
+    font-style: italic;
+}
+blockquote:before {
+    content:"\201C";
+    font-size:40px;
+    margin-left:-10px;
+    font-family:georgia,serif;
+    color:#eee;
+}
+blockquote p {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 18px;
+    margin-bottom: 0;
+    font-style: italic;
+}
+code, pre {
+    font-family: Monaco, Andale Mono, Courier New, monospace;
+}
+code {
+	color: #ff4a14;
+    padding: 1px 3px;
+    font-size: 12px;
+    -webkit-border-radius: 3px;
+    -moz-border-radius: 3px;
+    border-radius: 3px;
+}
+pre {
+    display: block;
+    padding: 14px;
+    margin: 0 0 18px;
+    line-height: 16px;
+    font-size: 11px;
+    border: 1px solid #bf370f;
+    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+pre code {
+    background-color: #282a36;
+    color: #ff4a14;
+    font-size: 11px;
+    padding: 0;
+}
+sup {
+    font-size: 0.83em;
+    vertical-align: super;
+    line-height: 0;
+}
+* {
+	-webkit-print-color-adjust: exact;
+}
+@media screen and (min-width: 914px) {
+    body {
+        width: 854px;
+        margin:10px auto;
+    }
+}
+@media print {
+	body,code,pre code,h1,h2,h3,h4,h5,h6 {
+		color: black;
+	}
+	table, pre {
+		page-break-inside: avoid;
+	}
+}
+/* Base16 Atelier Sulphurpool Dark - Theme */
+/* by Bram de Haan (http://atelierbram.github.io/syntax-highlighting/atelier-schemes/sulphurpool) */
+/* Original Base16 color scheme by Chris Kempson (https://github.com/chriskempson/base16) */
+
+/* Atelier-Sulphurpool Comment */
+.hljs-comment {
+  color: #898ea4;
+}
+
+/* Atelier-Sulphurpool Red */
+.hljs-variable,
+.hljs-attribute,
+.hljs-tag,
+.hljs-regexp,
+.hljs-name,
+.ruby .hljs-constant,
+.xml .hljs-tag .hljs-title,
+.xml .hljs-pi,
+.xml .hljs-doctype,
+.html .hljs-doctype,
+.css .hljs-id,
+.css .hljs-class,
+.css .hljs-pseudo {
+  color: #c94922;
+}
+
+/* Atelier-Sulphurpool Orange */
+.hljs-number,
+.hljs-preprocessor,
+.hljs-built_in,
+.hljs-literal,
+.hljs-params,
+.hljs-constant {
+  color: #c76b29;
+}
+
+/* Atelier-Sulphurpool Yellow */
+.ruby .hljs-class .hljs-title,
+.css .hljs-rule .hljs-attribute {
+  color: #c08b30;
+}
+
+/* Atelier-Sulphurpool Green */
+.hljs-string,
+.hljs-value,
+.hljs-inheritance,
+.hljs-header,
+.ruby .hljs-symbol,
+.xml .hljs-cdata {
+  color: #ac9739;
+}
+
+/* Atelier-Sulphurpool Aqua */
+.hljs-title,
+.css .hljs-hexcolor {
+  color: #22a2c9;
+}
+
+/* Atelier-Sulphurpool Blue */
+.hljs-function,
+.python .hljs-decorator,
+.python .hljs-title,
+.ruby .hljs-function .hljs-title,
+.ruby .hljs-title .hljs-keyword,
+.perl .hljs-sub,
+.javascript .hljs-title,
+.coffeescript .hljs-title {
+  color: #3d8fd1;
+}
+
+/* Atelier-Sulphurpool Purple */
+.hljs-keyword,
+.javascript .hljs-function {
+  color: #6679cc;
+}
+
+.hljs {
+  display: block;
+  overflow-x: auto;
+  background: #282a36;
+  color: #979db4;
+  padding: 0.5em;
+  -webkit-text-size-adjust: none;
+}
+
+.coffeescript .javascript,
+.javascript .xml,
+.tex .hljs-formula,
+.xml .javascript,
+.xml .vbscript,
+.xml .css,
+.xml .hljs-cdata {
+  opacity: 0.5;
+}
+
+</style>
+
+<style> @media print{ .hljs{overflow: visible; word-wrap: break-word !important;} }</style></head><body><div class="markdown-body">
+<h1 id="toc_0">填坑记,Swift集成WeexSDK</h1>
+
+<h4 id="toc_1"><strong>前言:</strong></h4>
+
+<p>最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)<br>
+<img src="media/14932553689252/u=1017077204,3032561456-fm=23-gp=0.jpg" alt="u=1017077204,3032561456-fm=23-gp=0" style="width:150px;">￼<br><br>
+首先,别告诉我你没有看过<a href="https://open.taobao.com/doc2/detail?spm=a219a.7629140.0.0.tFddsV&amp;&amp;docType=1&amp;articleId=104829" target="_blank" rel="external">Weex iOS SDK 集成指南</a>(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集成WeexSDK到你的项目里)如果第一步你完成的很丝滑,而且我也假装你看了Demo,完成了对&quot;hello.js&quot;的渲染,那我们很快就能进入正题,聊聊填坑的事儿了.<br><br>
+你如果已经看到<a href="https://weex.apache.org/cn/references/advanced/extend-to-ios.html" target="_blank" rel="external">iOS 扩展</a>的文档了,那么恭喜你,你已经迎来了第一个坑: <strong>自定义module</strong>,<img src="media/14932553689252/14932580825684.jpg" alt="">￼<br>
+,这时候,兴奋的你赶紧跑到demo里面,去查看了这个宏,然后你点啊点,发现<img src="media/14932553689252/14932581938930.jpg" alt="">￼<br>
+早已不写OC好多年的你表情肯定是这样的:</p>
+
+<p><img src="media/14932553689252/u=3505959089,2159339427-fm=23-gp=0.jpg" alt="u=3505959089,2159339427-fm=23-gp=0" style="width:130px;">￼<br><br>
+别担心,阿里爸爸已经猜到了你会这样,所以他们建议你创建一个桥接文件把宏写进OC的类里,然后为这个OC类写一个Swift的扩展,在扩展里写你要传递给Weex的module方法<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>.具体的您往这儿看:<br><br>
+OC类WXEventModule的.h 实现<br><br>
+<img src="media/14932553689252/14932619244153.jpg" alt="" style="width:395px;">￼<br><br>
+OC类WXEventModule的.m 实现<br><br>
+<img src="media/14932553689252/14932619725368.jpg" alt="" style="width:349px;">￼<br>
+这时候,聪明可人的你可能发现了, &quot;WeexTest-Swift.h&quot;是个什么鬼?别担心,你只要把他改成&quot;YouDemo-Swift.h&quot;就行了.这个.h文件是系统自动生成的,用于在OC类里引用Swift实例,是一个隐形的文件,第一次引进来,只要编译一次就可以找到了.(其实<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>里面有说,但说的不够详细) <br>
+<img src="media/14932553689252/u=1981424219,3081367983-fm=23-gp=0.jpg" alt="u=1981424219,3081367983-fm=23-gp=0" style="width:150px;">￼</p>
+
+<p>然后在Swift类的扩展里这样:<br><br>
+<img src="media/14932553689252/14932620356410.jpg" alt="" style="width:425px;">￼<br><br>
+别忘了把你的module引入到桥接文件<br><br>
+<img src="media/14932553689252/14932620892860.jpg" alt="" style="width:250px;">￼<br><br>
+最后,在AppDelegate里面注册一下你的module:</p>
+
+<pre><code class="language-Swift">WXSDKEngine.registerModule(&quot;WXOpenpageModule&quot;, with: NSClassFromString(&quot;WXEventModule&quot;))
+</code></pre>
+
+<p>行了,自定义module的坑踩平了,放下键盘,拿起手机,打一盘王者农药压压惊吧!<br><br>
+接下来说一说Weex下载图片的坑,weexSDK 没有图片下载的能力，需要我们手动实现一个下载器WXImgLoaderDefaultImpl(英俊潇洒,懒癌晚期的我,直接克隆的演示Demo的下载器),细节没什么说的,你只要拖到你的项目里,然后在AppDelegate里注册一下就OK了</p>
+
+<pre><code class="language-Swift">WXSDKEngine.registerHandler(WXImgLoaderDefaultImpl(), with: NSProtocolFromString(&quot;WXImgLoaderProtocol&quot;))
+</code></pre>
+
+<h4 id="toc_2"><strong>结束语:</strong></h4>
+
+<p>最后奉上我的一发Demo,<a href="https://github.com/15130886370/WeexTest" target="_blank" rel="external">传送门</a>,我觉得有必要介绍下这个Demo,我实现了一个扫描二维码功能,你可以用他扫描你们前端小伙伴部署到服务器的JSBundle链接,然后直接在控制器里拿到这个链接去渲染,这样开发测试起来还是很方便的嘛,如果帮到了你,也烦请您动动发财的小手,右上角点点star,毕竟做人最重要的是装逼嘛~~</p>
+
+<p><img src="media/14932553689252/NK4RR-CPMTI7S%60HOZ@4_GUP.jpg" alt="NK4RR-CPMTI7S`HOZ@4_GUP" style="width:99px;">￼</p>
+
+<p>踩坑持续中,不间断更新,欢迎评论交流~!</p>
+
+</div></body>
+
+</html>
+
       
 
       
@@ -183,78 +465,7 @@
 
       
         <p class="article-more-link">
-          <a class="article-more-a" href="/2017/08/24/“HelloWorld”/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-hello-world" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/08/24/hello-world/">Hello World</a>
-    </h1>
-  
-
-        
-        <a href="/2017/08/24/hello-world/" class="archive-article-date">
-  	<time datetime="2017-08-24T07:32:23.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-08-24</time>
-</a>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>Welcome to <a href="https://hexo.io/" target="_blank" rel="external">Hexo</a>! This is your very first post. Check <a href="https://hexo.io/docs/" target="_blank" rel="external">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a href="https://hexo.io/docs/troubleshooting.html" target="_blank" rel="external">troubleshooting</a> or you can ask me on <a href="https://github.com/hexojs/hexo/issues" target="_blank" rel="external">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo new <span class="string">"My New Post"</span></div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/writing.html" target="_blank" rel="external">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo server</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/server.html" target="_blank" rel="external">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo generate</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/generating.html" target="_blank" rel="external">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ hexo deploy</div></pre></td></tr></table></figure>
-<p>More info: <a href="https://hexo.io/docs/deployment.html" target="_blank" rel="external">Deployment</a></p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/08/24/hello-world/">展开全文 >></a>
+          <a class="article-more-a" href="/2017/08/24/1/">展开全文 >></a>
         </p>
       
 
