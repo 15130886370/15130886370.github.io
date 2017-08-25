@@ -151,12 +151,74 @@
           <div id="js-content" class="content-ll">
             
   
+    <article id="post-post-name" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/25/post-name/">post_name</a>
+    </h1>
+  
+
+        
+        <a href="/2017/08/25/post-name/" class="archive-article-date">
+  	<time datetime="2017-08-25T01:46:13.000Z" itemprop="datePublished"><i class="icon-calendar icon"></i>2017-08-25</time>
+</a>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/08/25/post-name/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
     <article id="post-填坑记,Swift集成WeexSDK" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="填坑记-Swift集成WeexSDK"><a href="#填坑记-Swift集成WeexSDK" class="headerlink" title="填坑记,Swift集成WeexSDK"></a>填坑记,Swift集成WeexSDK</h1><h4 id="前言"><a href="#前言" class="headerlink" title="前言:"></a><strong>前言:</strong></h4><p>最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)<br><img src="media/14932553689252/u=1017077204,3032561456-fm=23-gp=0.jpg" alt="u=1017077204,3032561456-fm=23-gp=0-w150"><br>首先,别告诉我你没有看过<a href="https://open.taobao.com/doc2/detail?spm=a219a.7629140.0.0.tFddsV&amp;&amp;docType=1&amp;articleId=104829" target="_blank" rel="external">Weex iOS SDK 集成指南</a>(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集成WeexSDK到你的项目里)如果第一步你完成的很丝滑,而且我也假装你看了Demo,完成了对”hello.js”的渲染,那我们很快就能进入正题,聊聊填坑的事儿了.<br>你如果已经看到<a href="https://weex.apache.org/cn/references/advanced/extend-to-ios.html" target="_blank" rel="external">iOS 扩展</a>的文档了,那么恭喜你,你已经迎来了第一个坑: <strong>自定义module</strong>,<img src="media/14932553689252/14932580825684.jpg" alt=""><br>,这时候,兴奋的你赶紧跑到demo里面,去查看了这个宏,然后你点啊点,发现<img src="media/14932553689252/14932581938930.jpg" alt=""><br>早已不写OC好多年的你表情肯定是这样的:</p>
+        <h1 id="填坑记-Swift集成WeexSDK"><a href="#填坑记-Swift集成WeexSDK" class="headerlink" title="填坑记,Swift集成WeexSDK"></a>填坑记,Swift集成WeexSDK</h1><h4 id="前言"><a href="#前言" class="headerlink" title="前言:"></a><strong>前言:</strong></h4><p>最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)<br><img src="media/14932553689252/u=1017077204,3032561456-fm=23-gp=0.jpg" alt="u=1017077204,3032561456-fm=23-gp=0-w150"><br><br>首先,别告诉我你没有看过<a href="https://open.taobao.com/doc2/detail?spm=a219a.7629140.0.0.tFddsV&amp;&amp;docType=1&amp;articleId=104829" target="_blank" rel="external">Weex iOS SDK 集成指南</a>(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集成WeexSDK到你的项目里)如果第一步你完成的很丝滑,而且我也假装你看了Demo,完成了对”hello.js”的渲染,那我们很快就能进入正题,聊聊填坑的事儿了.<br>你如果已经看到<a href="https://weex.apache.org/cn/references/advanced/extend-to-ios.html" target="_blank" rel="external">iOS 扩展</a>的文档了,那么恭喜你,你已经迎来了第一个坑: <strong>自定义module</strong>,<img src="media/14932553689252/14932580825684.jpg" alt=""><br>,这时候,兴奋的你赶紧跑到demo里面,去查看了这个宏,然后你点啊点,发现<img src="media/14932553689252/14932581938930.jpg" alt=""><br>早已不写OC好多年的你表情肯定是这样的:</p>
 <p><img src="media/14932553689252/u=3505959089,2159339427-fm=23-gp=0.jpg" alt="u=3505959089,2159339427-fm=23-gp=0-w130"><br>别担心,阿里爸爸已经猜到了你会这样,所以他们建议你创建一个桥接文件把宏写进OC的类里,然后为这个OC类写一个Swift的扩展,在扩展里写你要传递给Weex的module方法<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>.具体的您往这儿看:<br>OC类WXEventModule的.h 实现<br><img src="media/14932553689252/14932619244153.jpg" alt="-w395"><br>OC类WXEventModule的.m 实现<br><img src="media/14932553689252/14932619725368.jpg" alt="-w349"><br>这时候,聪明可人的你可能发现了, “WeexTest-Swift.h”是个什么鬼?别担心,你只要把他改成”YouDemo-Swift.h”就行了.这个.h文件是系统自动生成的,用于在OC类里引用Swift实例,是一个隐形的文件,第一次引进来,只要编译一次就可以找到了.(其实<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>里面有说,但说的不够详细)<br><img src="media/14932553689252/u=1981424219,3081367983-fm=23-gp=0.jpg" alt="u=1981424219,3081367983-fm=23-gp=0-w150"></p>
 <p>然后在Swift类的扩展里这样:<br><img src="media/14932553689252/14932620356410.jpg" alt="-w425"><br>别忘了把你的module引入到桥接文件<br><img src="media/14932553689252/14932620892860.jpg" alt="-w250"><br>最后,在AppDelegate里面注册一下你的module:</p>
 <figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="type">WXSDKEngine</span>.registerModule(<span class="string">"WXOpenpageModule"</span>, with: <span class="type">NSClassFromString</span>(<span class="string">"WXEventModule"</span>))</div></pre></td></tr></table></figure>
