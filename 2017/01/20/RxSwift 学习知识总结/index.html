@@ -8,23 +8,23 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>RxSwift 学习知识总结 | 一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="RxSwift 学习知识总结一行一行看RxExample中的GitHubSignup例子前言: RxSwift学习阶段总结一些心得,这几天看了RxExample中的GitHubSignup例子(我觉得,这个学习RxSwift很不错),由于水平有限,错误之处,还请指正.直接开始看demo吧,💊💊,切克闹~">
+  <meta name="description" content="一行一行看RxExample中的GitHubSignup例子前言: RxSwift学习阶段总结一些心得,这几天看了RxExample中的GitHubSignup例子(我觉得,这个学习RxSwift很不错),由于水平有限,错误之处,还请指正.直接开始看demo吧,💊💊,切克闹~">
 <meta name="keywords" content="Swift,RxSwift">
 <meta property="og:type" content="article">
 <meta property="og:title" content="RxSwift 学习知识总结">
 <meta property="og:url" content="http://yoursite.com/2017/01/20/RxSwift 学习知识总结/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="RxSwift 学习知识总结一行一行看RxExample中的GitHubSignup例子前言: RxSwift学习阶段总结一些心得,这几天看了RxExample中的GitHubSignup例子(我觉得,这个学习RxSwift很不错),由于水平有限,错误之处,还请指正.直接开始看demo吧,💊💊,切克闹~">
+<meta property="og:description" content="一行一行看RxExample中的GitHubSignup例子前言: RxSwift学习阶段总结一些心得,这几天看了RxExample中的GitHubSignup例子(我觉得,这个学习RxSwift很不错),由于水平有限,错误之处,还请指正.直接开始看demo吧,💊💊,切克闹~">
 <meta property="og:locale" content="Chinese">
 <meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fiw2qxxatoj30hw0b4mzl.jpg">
 <meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fiw2qx9ehyj30cq06j0ti.jpg">
 <meta property="og:image" content="http://yoursite.com/2017/01/20/RxSwift%20学习知识总结/media/14848760629050/14883537334053.jpg">
 <meta property="og:image" content="http://yoursite.com/2017/01/20/RxSwift%20学习知识总结/media/14848760629050/wulian.jpg">
 <meta property="og:image" content="http://yoursite.com/2017/01/20/RxSwift%20学习知识总结/media/14848760629050/14883502601462.jpg">
-<meta property="og:updated_time" content="2017-08-25T09:18:07.000Z">
+<meta property="og:updated_time" content="2017-08-25T09:21:49.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RxSwift 学习知识总结">
-<meta name="twitter:description" content="RxSwift 学习知识总结一行一行看RxExample中的GitHubSignup例子前言: RxSwift学习阶段总结一些心得,这几天看了RxExample中的GitHubSignup例子(我觉得,这个学习RxSwift很不错),由于水平有限,错误之处,还请指正.直接开始看demo吧,💊💊,切克闹~">
+<meta name="twitter:description" content="一行一行看RxExample中的GitHubSignup例子前言: RxSwift学习阶段总结一些心得,这几天看了RxExample中的GitHubSignup例子(我觉得,这个学习RxSwift很不错),由于水平有限,错误之处,还请指正.直接开始看demo吧,💊💊,切克闹~">
 <meta name="twitter:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fiw2qxxatoj30hw0b4mzl.jpg">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
@@ -186,7 +186,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="RxSwift-学习知识总结"><a href="#RxSwift-学习知识总结" class="headerlink" title="RxSwift 学习知识总结"></a>RxSwift 学习知识总结</h1><h4 id="一行一行看RxExample中的GitHubSignup例子"><a href="#一行一行看RxExample中的GitHubSignup例子" class="headerlink" title="一行一行看RxExample中的GitHubSignup例子"></a>一行一行看RxExample中的GitHubSignup例子</h4><p><strong>前言</strong>: RxSwift学习阶段总结一些心得,这几天看了<code>RxExample</code>中的<code>GitHubSignup</code>例子(我觉得,这个学习RxSwift很不错),由于水平有限,错误之处,还请指正.直接开始看demo吧,💊💊,切克闹~<br><a id="more"></a><br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fiw2qxxatoj30hw0b4mzl.jpg" alt=""><br>很简单,只有几个Swift文件,不过你可能会疑惑,为什么UsingDriver和UsingVanilaObservables两个文件那么类似?这么问的童鞋,恭喜你,你该制杖了<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fiw2qx9ehyj30cq06j0ti.jpg" alt=""><br>很明显,本demo是用老司机(Driver)和Observables两个版本实现的嘛!😅</p>
+        <h4 id="一行一行看RxExample中的GitHubSignup例子"><a href="#一行一行看RxExample中的GitHubSignup例子" class="headerlink" title="一行一行看RxExample中的GitHubSignup例子"></a>一行一行看RxExample中的GitHubSignup例子</h4><p><strong>前言</strong>: RxSwift学习阶段总结一些心得,这几天看了<code>RxExample</code>中的<code>GitHubSignup</code>例子(我觉得,这个学习RxSwift很不错),由于水平有限,错误之处,还请指正.直接开始看demo吧,💊💊,切克闹~<br><a id="more"></a><br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fiw2qxxatoj30hw0b4mzl.jpg" alt=""><br>很简单,只有几个Swift文件,不过你可能会疑惑,为什么UsingDriver和UsingVanilaObservables两个文件那么类似?这么问的童鞋,恭喜你,你该制杖了<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fiw2qx9ehyj30cq06j0ti.jpg" alt=""><br>很明显,本demo是用老司机(Driver)和Observables两个版本实现的嘛!😅</p>
 <h4 id="好了-进入正题"><a href="#好了-进入正题" class="headerlink" title="好了,进入正题"></a>好了,进入正题</h4><p>先说下Protocols吧,POP和Observables结合的最完美案例:<br>首先映入眼帘的两个枚举,不必多说,一个是验证结果,一个是注册状态</p>
 <figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">enum</span> <span class="title">ValidationResult</span> </span>&#123;</div><div class="line">    <span class="keyword">case</span> ok(message: <span class="type">String</span>)</div><div class="line">    <span class="keyword">case</span> empty</div><div class="line">    <span class="keyword">case</span> validating</div><div class="line">    <span class="keyword">case</span> failed(message: <span class="type">String</span>)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">enum</span> <span class="title">SignupState</span> </span>&#123;</div><div class="line">    <span class="keyword">case</span> signedUp(signedUp: <span class="type">Bool</span>)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">ValidationResult</span> </span>&#123;</div><div class="line">    <span class="keyword">var</span> isValid: <span class="type">Bool</span> &#123;</div><div class="line">        <span class="keyword">switch</span> <span class="keyword">self</span> &#123;</div><div class="line">        <span class="keyword">case</span> .ok:</div><div class="line">            <span class="keyword">return</span> <span class="literal">true</span></div><div class="line">        <span class="keyword">default</span>:</div><div class="line">            <span class="keyword">return</span> <span class="literal">false</span></div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
 <p>这里两个协议</p>
