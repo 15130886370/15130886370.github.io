@@ -8,12 +8,12 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="填坑记,Swift集成WeexSDK前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)首先,别告诉我你没有看过Weex iOS SDK 集成指南(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集">
+  <meta name="description" content="填坑记,Swift集成WeexSDK前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一江春水">
 <meta property="og:url" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="填坑记,Swift集成WeexSDK前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)首先,别告诉我你没有看过Weex iOS SDK 集成指南(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集">
+<meta property="og:description" content="填坑记,Swift集成WeexSDK前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
 <meta property="og:locale" content="Chinese">
 <meta property="og:image" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/media/14932553689252/u=1017077204,3032561456-fm=23-gp=0.jpg">
 <meta property="og:image" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/media/14932553689252/14932580825684.jpg">
@@ -25,10 +25,10 @@
 <meta property="og:image" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/media/14932553689252/14932620356410.jpg">
 <meta property="og:image" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/media/14932553689252/14932620892860.jpg">
 <meta property="og:image" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/media/14932553689252/NK4RR-CPMTI7S%60HOZ@4_GUP.jpg">
-<meta property="og:updated_time" content="2017-08-25T01:50:31.000Z">
+<meta property="og:updated_time" content="2017-08-25T02:55:48.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一江春水">
-<meta name="twitter:description" content="填坑记,Swift集成WeexSDK前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)首先,别告诉我你没有看过Weex iOS SDK 集成指南(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集">
+<meta name="twitter:description" content="填坑记,Swift集成WeexSDK前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
 <meta name="twitter:image" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/media/14932553689252/u=1017077204,3032561456-fm=23-gp=0.jpg">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
@@ -54,11 +54,11 @@
     <canvas id="anm-canvas" class="anm-canvas"></canvas>
     <div class="left-col" q-class="show:isShow">
       
-<div class="overlay" style="background: #FFFFFF"></div>
+<div class="overlay" style="background: #4d4d4d"></div>
 <div class="intrude-less">
 	<header id="header" class="inner">
 		<a href="/" class="profilepic">
-			<img src="https://ws1.sinaimg.cn/large/006tKfTcly1fivqvepbpcj3032032wef.jpg" class="js-avatar">
+			<img src="https://ws1.sinaimg.cn/large/006tKfTcly1fivt4svmdtj304n04gt9q.jpg" class="js-avatar">
 		</a>
 		<hgroup>
 		  <h1 class="header-author"><a href="/">ittmomWang</a></h1>
@@ -107,14 +107,14 @@
     <div class="mid-col" q-class="show:isShow,hide:isShow|isFalse">
       
 <nav id="mobile-nav">
-  	<div class="overlay js-overlay" style="background: #FFFFFF"></div>
+  	<div class="overlay js-overlay" style="background: #4d4d4d"></div>
 	<div class="btnctn js-mobile-btnctn">
   		<div class="slider-trigger list" q-on="click: openSlider(e)"><i class="icon icon-sort"></i></div>
 	</div>
 	<div class="intrude-less">
 		<header id="header" class="inner">
 			<div class="profilepic">
-				<img src="https://ws1.sinaimg.cn/large/006tKfTcly1fivqvepbpcj3032032wef.jpg" class="js-avatar">
+				<img src="https://ws1.sinaimg.cn/large/006tKfTcly1fivt4svmdtj304n04gt9q.jpg" class="js-avatar">
 			</div>
 			<hgroup>
 			  <h1 class="header-author js-header-author">ittmomWang</h1>
@@ -166,7 +166,7 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="填坑记-Swift集成WeexSDK"><a href="#填坑记-Swift集成WeexSDK" class="headerlink" title="填坑记,Swift集成WeexSDK"></a>填坑记,Swift集成WeexSDK</h1><h4 id="前言"><a href="#前言" class="headerlink" title="前言:"></a><strong>前言:</strong></h4><p>最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)<br><img src="media/14932553689252/u=1017077204,3032561456-fm=23-gp=0.jpg" alt="u=1017077204,3032561456-fm=23-gp=0-w150"><br><br>首先,别告诉我你没有看过<a href="https://open.taobao.com/doc2/detail?spm=a219a.7629140.0.0.tFddsV&amp;&amp;docType=1&amp;articleId=104829" target="_blank" rel="external">Weex iOS SDK 集成指南</a>(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集成WeexSDK到你的项目里)如果第一步你完成的很丝滑,而且我也假装你看了Demo,完成了对”hello.js”的渲染,那我们很快就能进入正题,聊聊填坑的事儿了.<br>你如果已经看到<a href="https://weex.apache.org/cn/references/advanced/extend-to-ios.html" target="_blank" rel="external">iOS 扩展</a>的文档了,那么恭喜你,你已经迎来了第一个坑: <strong>自定义module</strong>,<img src="media/14932553689252/14932580825684.jpg" alt=""><br>,这时候,兴奋的你赶紧跑到demo里面,去查看了这个宏,然后你点啊点,发现<img src="media/14932553689252/14932581938930.jpg" alt=""><br>早已不写OC好多年的你表情肯定是这样的:</p>
+        <h1 id="填坑记-Swift集成WeexSDK"><a href="#填坑记-Swift集成WeexSDK" class="headerlink" title="填坑记,Swift集成WeexSDK"></a>填坑记,Swift集成WeexSDK</h1><h4 id="前言"><a href="#前言" class="headerlink" title="前言:"></a><strong>前言:</strong></h4><p>最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)<br><img src="media/14932553689252/u=1017077204,3032561456-fm=23-gp=0.jpg" alt="u=1017077204,3032561456-fm=23-gp=0-w150"><br><br><a id="more"></a><br>首先,别告诉我你没有看过<a href="https://open.taobao.com/doc2/detail?spm=a219a.7629140.0.0.tFddsV&amp;&amp;docType=1&amp;articleId=104829" target="_blank" rel="external">Weex iOS SDK 集成指南</a>(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集成WeexSDK到你的项目里)如果第一步你完成的很丝滑,而且我也假装你看了Demo,完成了对”hello.js”的渲染,那我们很快就能进入正题,聊聊填坑的事儿了.<br>你如果已经看到<a href="https://weex.apache.org/cn/references/advanced/extend-to-ios.html" target="_blank" rel="external">iOS 扩展</a>的文档了,那么恭喜你,你已经迎来了第一个坑: <strong>自定义module</strong>,<img src="media/14932553689252/14932580825684.jpg" alt=""><br>,这时候,兴奋的你赶紧跑到demo里面,去查看了这个宏,然后你点啊点,发现<img src="media/14932553689252/14932581938930.jpg" alt=""><br>早已不写OC好多年的你表情肯定是这样的:</p>
 <p><img src="media/14932553689252/u=3505959089,2159339427-fm=23-gp=0.jpg" alt="u=3505959089,2159339427-fm=23-gp=0-w130"><br>别担心,阿里爸爸已经猜到了你会这样,所以他们建议你创建一个桥接文件把宏写进OC的类里,然后为这个OC类写一个Swift的扩展,在扩展里写你要传递给Weex的module方法<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>.具体的您往这儿看:<br>OC类WXEventModule的.h 实现<br><img src="media/14932553689252/14932619244153.jpg" alt="-w395"><br>OC类WXEventModule的.m 实现<br><img src="media/14932553689252/14932619725368.jpg" alt="-w349"><br>这时候,聪明可人的你可能发现了, “WeexTest-Swift.h”是个什么鬼?别担心,你只要把他改成”YouDemo-Swift.h”就行了.这个.h文件是系统自动生成的,用于在OC类里引用Swift实例,是一个隐形的文件,第一次引进来,只要编译一次就可以找到了.(其实<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>里面有说,但说的不够详细)<br><img src="media/14932553689252/u=1981424219,3081367983-fm=23-gp=0.jpg" alt="u=1981424219,3081367983-fm=23-gp=0-w150"></p>
 <p>然后在Swift类的扩展里这样:<br><img src="media/14932553689252/14932620356410.jpg" alt="-w425"><br>别忘了把你的module引入到桥接文件<br><img src="media/14932553689252/14932620892860.jpg" alt="-w250"><br>最后,在AppDelegate里面注册一下你的module:</p>
 <figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="type">WXSDKEngine</span>.registerModule(<span class="string">"WXOpenpageModule"</span>, with: <span class="type">NSClassFromString</span>(<span class="string">"WXEventModule"</span>))</div></pre></td></tr></table></figure>
@@ -176,6 +176,10 @@
 <p>####<strong>结束语:</strong><br>最后奉上我的一发Demo,<a href="https://github.com/15130886370/WeexTest" target="_blank" rel="external">传送门</a>,我觉得有必要介绍下这个Demo,我实现了一个扫描二维码功能,你可以用他扫描你们前端小伙伴部署到服务器的JSBundle链接,然后直接在控制器里拿到这个链接去渲染,这样开发测试起来还是很方便的嘛,如果帮到了你,也烦请您动动发财的小手,右上角点点star,毕竟做人最重要的是装逼嘛~~</p>
 <p><img src="media/14932553689252/NK4RR-CPMTI7S%60HOZ@4_GUP.jpg" alt="NK4RR-CPMTI7S`HOZ@4_GUP-w99"></p>
 <p>踩坑持续中,不间断更新,欢迎评论交流~!</p>
+<p><a href="<%- url_for(post.path) %>" class="<%= class_name %>"><br>      <time datetime="<%= date_xml(post.date) %>" itemprop="datePublished">&lt;%= date(post.date, date_format) %&gt;</time><br>      <span id="busuanzi_container_page_pv" style="color:DarkGray"><br>      view <span id="busuanzi_value_page_pv"></span> times<br>    </span><br></a></p>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+
 
       
 
@@ -192,6 +196,16 @@
                   <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢你请我吃糖果<i class="icon icon-quo-right"></i></p>
                   <div class="reward-box">
                     
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="https://ws2.sinaimg.cn/large/006tKfTcly1fivr53zvakj30go0p0aco.jpg">
+                      <span class="reward-type">支付宝</span>
+                    </div>
+                    
+                    
+                    <div class="reward-box-item">
+                      <img class="reward-img" src="https://ws2.sinaimg.cn/large/006tKfTcly1fivr5hn2ouj30q60zkq51.jpg">
+                      <span class="reward-type">微信</span>
+                    </div>
                     
                   </div>
                 </span>
@@ -323,7 +337,7 @@
 		toc_hide_index: true,
 		root: "/",
 		innerArchive: true,
-		showTags: false
+		showTags: true
 	}
 </script>
 
