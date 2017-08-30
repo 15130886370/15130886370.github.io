@@ -6,31 +6,24 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>填坑记,Swift集成WeexSDK | 一江春水</title>
+  <title>一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
-<meta name="keywords" content="Swift">
+  <meta name="description" content="#   上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法  先看个例子123456789101112class HTMLElment &amp;#123;    let name: String     let text: String?     var as">
 <meta property="og:type" content="article">
-<meta property="og:title" content="填坑记,Swift集成WeexSDK">
-<meta property="og:url" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/index.html">
+<meta property="og:title" content="一江春水">
+<meta property="og:url" content="http://yoursite.com/2017/08/30/扒一扒swift中的unowned和weak下/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
+<meta property="og:description" content="#   上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法  先看个例子123456789101112class HTMLElment &amp;#123;    let name: String     let text: String?     var as">
 <meta property="og:locale" content="Chinese">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivx93i72fj313601iq3z.jpg">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivx9ptz8fj311o0fsn3w.jpg">
-<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tKfTcly1fivxa5zc5wj307805xq2v.jpg">
-<meta property="og:image" content="https://ws1.sinaimg.cn/large/006tKfTcly1fivxaxjrsjj30ly06owfj.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxbg9kf6j30je08mtac.jpg">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivxc3kn38j308c07fjrf.jpg">
-<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tKfTcly1fivxd1jjdlj30nm092wg4.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxdhqjgfj30dw03gaao.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxeiwzvlj305i05eq34.jpg">
-<meta property="og:updated_time" content="2017-08-25T09:21:56.000Z">
+<meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-normal-deinit-h1@2x.jpg">
+<meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-abnormal-deinit-h1@2x.jpg">
+<meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-closure-ref-cycle@2x.jpg">
+<meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-closure-unowned-capture@2x.jpg">
+<meta property="og:updated_time" content="2017-08-30T01:41:05.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="填坑记,Swift集成WeexSDK">
-<meta name="twitter:description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
-<meta name="twitter:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg">
+<meta name="twitter:title" content="一江春水">
+<meta name="twitter:description" content="#   上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法  先看个例子123456789101112class HTMLElment &amp;#123;    let name: String     let text: String?     var as">
+<meta name="twitter:image" content="https://dn-boxueio.qbox.me/bo-reading-normal-deinit-h1@2x.jpg">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
   
@@ -154,42 +147,36 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-填坑记,Swift集成WeexSDK" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-扒一扒swift中的unowned和weak下" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      填坑记,Swift集成WeexSDK
-    </h1>
-  
-
-        
-        <a href="/2017/04/27/填坑记,Swift集成WeexSDK/" class="archive-article-date">
-  	<time datetime="2017-04-27T01:09:28.000Z" itemprop="datePublished">2017-04-27</time>
-  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
-      view <span id="busuanzi_value_page_pv"></span> times
-    </span>
-</a>
-<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
-</script>
-        
-      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h4 id="前言"><a href="#前言" class="headerlink" title="前言:"></a><strong>前言:</strong></h4><p>最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg" alt=""><br><a id="more"></a><br>首先,别告诉我你没有看过<a href="https://open.taobao.com/doc2/detail?spm=a219a.7629140.0.0.tFddsV&amp;&amp;docType=1&amp;articleId=104829" target="_blank" rel="external">Weex iOS SDK 集成指南</a>(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集成WeexSDK到你的项目里)如果第一步你完成的很丝滑,而且我也假装你看了Demo,完成了对”hello.js”的渲染,那我们很快就能进入正题,聊聊填坑的事儿了.<br>你如果已经看到<a href="https://weex.apache.org/cn/references/advanced/extend-to-ios.html" target="_blank" rel="external">iOS 扩展</a>的文档了,那么恭喜你,你已经迎来了第一个坑: <strong>自定义module</strong>,<img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivx93i72fj313601iq3z.jpg" alt=""><br>,这时候,兴奋的你赶紧跑到demo里面,去查看了这个宏,然后你点啊点,发现<img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivx9ptz8fj311o0fsn3w.jpg" alt=""><br>早已不写OC好多年的你表情肯定是这样的:</p>
-<p><img src="https://ws3.sinaimg.cn/large/006tKfTcly1fivxa5zc5wj307805xq2v.jpg" alt=""><br>别担心,阿里爸爸已经猜到了你会这样,所以他们建议你创建一个桥接文件把宏写进OC的类里,然后为这个OC类写一个Swift的扩展,在扩展里写你要传递给Weex的module方法<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>.具体的您往这儿看:<br>OC类WXEventModule的.h 实现<br><img src="https://ws1.sinaimg.cn/large/006tKfTcly1fivxaxjrsjj30ly06owfj.jpg" alt=""><br>OC类WXEventModule的.m 实现<br><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxbg9kf6j30je08mtac.jpg" alt=""><br>这时候,聪明可人的你可能发现了, “WeexTest-Swift.h”是个什么鬼?别担心,你只要把他改成”YouDemo-Swift.h”就行了.这个.h文件是系统自动生成的,用于在OC类里引用Swift实例,是一个隐形的文件,第一次引进来,只要编译一次就可以找到了.(其实<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>里面有说,但说的不够详细)<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivxc3kn38j308c07fjrf.jpg" alt=""></p>
-<p>然后在Swift类的扩展里这样:<br><img src="https://ws3.sinaimg.cn/large/006tKfTcly1fivxd1jjdlj30nm092wg4.jpg" alt=""><br>别忘了把你的module引入到桥接文件<br><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxdhqjgfj30dw03gaao.jpg" alt=""><br>最后,在AppDelegate里面注册一下你的module:</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="type">WXSDKEngine</span>.registerModule(<span class="string">"WXOpenpageModule"</span>, with: <span class="type">NSClassFromString</span>(<span class="string">"WXEventModule"</span>))</div></pre></td></tr></table></figure>
-<p>行了,自定义module的坑踩平了,放下键盘,拿起手机,打一盘王者农药压压惊吧!<br>接下来说一说Weex下载图片的坑,weexSDK 没有图片下载的能力，需要我们手动实现一个下载器WXImgLoaderDefaultImpl(英俊潇洒,懒癌晚期的我,直接克隆的演示Demo的下载器),细节没什么说的,你只要拖到你的项目里,然后在AppDelegate里注册一下就OK了</p>
-<pre><code class="Swift"><span class="type">WXSDKEngine</span>.registerHandler(<span class="type">WXImgLoaderDefaultImpl</span>(), with: <span class="type">NSProtocolFromString</span>(<span class="string">"WXImgLoaderProtocol"</span>))
-</code></pre>
-<p>####<strong>结束语:</strong><br>最后奉上我的一发Demo,<a href="https://github.com/15130886370/WeexTest" target="_blank" rel="external">传送门</a>,我觉得有必要介绍下这个Demo,我实现了一个扫描二维码功能,你可以用他扫描你们前端小伙伴部署到服务器的JSBundle链接,然后直接在控制器里拿到这个链接去渲染,这样开发测试起来还是很方便的嘛,如果帮到了你,也烦请您动动发财的小手,右上角点点star,毕竟做人最重要的是装逼嘛~~</p>
-<p><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxeiwzvlj305i05eq34.jpg" alt=""></p>
-<p>踩坑持续中,不间断更新,欢迎评论交流~!</p>
-
+        <p># </p>
+<blockquote>
+<p>上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法</p>
+</blockquote>
+<p>先看个例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">class HTMLElment &#123;</div><div class="line">    let name: String </div><div class="line">    let text: String? </div><div class="line">    var asHTML: Void -&gt; String = &#123; </div><div class="line">    // WRONG SYNTAX!!!</div><div class="line">    if let text = self.text &#123; </div><div class="line">        return &quot;&lt;\(self.name)&gt;\(self.text)&quot;</div><div class="line">    &#125; else &#123;</div><div class="line">       return &quot;&lt;\(self.name)&gt;&quot; </div><div class="line">    &#125;</div><div class="line"> &#125; // Omit for simplicity...</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<blockquote>
+<p>注: <em>lazy可以确保一个成员只能在类对象在完整初始化过以后,才能使用</em></p>
+</blockquote>
+<p>定义了asHTML之后，我们就可以观察h1的构建和释放过程了。首先，我们看使用asHTML之前：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">var h1: HTMLElment? = HTMLElment(name: &quot;h1&quot;, text: &quot;Title&quot;)h1 = nil</div></pre></td></tr></table></figure></p>
+<p>在Playground结果里，我们可以看到h1先被创建，而后被销毁的过程（因为HTMLElement的deinit方法被调用了）。<br><img src="https://dn-boxueio.qbox.me/bo-reading-normal-deinit-h1@2x.jpg" alt=""><br>而当我们在让h1等于nil前，使用asHTML的话，情况就不同了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">var h1: HTMLElment? = HTMLElment(name: &quot;h1&quot;, text: &quot;Title&quot;)</div><div class="line">h1.asHTML</div><div class="line">h1 = nil</div></pre></td></tr></table></figure></p>
+<p>这时我们就发现，HTMLElement的deinit不再被调用了。<br><img src="https://dn-boxueio.qbox.me/bo-reading-abnormal-deinit-h1@2x.jpg" alt=""><br>根据之前说过的,我们推断,一定是某处发生了循环引用了。<br><img src="https://dn-boxueio.qbox.me/bo-reading-closure-ref-cycle@2x.jpg" alt=""><br>h1是我们定义的strong reference。Closure作为一个引用类型，它有自己的对象，因此asHTML也是一个strong reference。由于asHTML“捕获”了HTMLElement的self，因此HTMLElement的引用计数是2。当h1为nil时，asHTML对closure的引用和closure对self的“捕获”就形成了一个reference cycle。</p>
+<blockquote>
+<p>注: <em>尽管在closure内部，使用了多次self，closure对self的捕获仅发生1次（引用计数只加1）。</em></p>
+</blockquote>
+<h4 id="Closure中发生reference-cycle的解决办法"><a href="#Closure中发生reference-cycle的解决办法" class="headerlink" title="Closure中发生reference cycle的解决办法:"></a>Closure中发生reference cycle的解决办法:</h4><p>本质上来说，closure作为一个引用类型，解决reference cycle的方式和解决类对象之间的reference cycle是一样的，如果引起reference cycle的”捕获”不能为nil，就把它定义为unowned，否则，定义为weak。而指定“捕获”方式的地方，叫做closure的capture list。<br>我们把asHTML修改成下面这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">class HTMLElment &#123;</div><div class="line">   let name: String </div><div class="line">   let text: String? </div><div class="line">   lazy var asHTML: Void -&gt; String = &#123; </div><div class="line">   // text</div><div class="line">   // Capture list </div><div class="line">   [unowned self] in</div><div class="line">   if let text = self.text &#123; </div><div class="line">       return &quot;&lt;\(self.name)&gt;\(self.text)&quot;</div><div class="line">   &#125; else &#123;</div><div class="line">   return &quot;&lt;\(self.name)&gt;&quot; </div><div class="line">   &#125;</div><div class="line">  &#125;</div><div class="line"> ｝</div></pre></td></tr></table></figure></p>
+<p>我们使用一对 [] 表示closure的capture list，由于“捕获”到的self不能为nil（否则closure也不存在了），因此我们把它定义为unowned self。在我们这样做之后，当h1为nil时，对象之间的关系就变成了这样：<br><img src="https://dn-boxueio.qbox.me/bo-reading-closure-unowned-capture@2x.jpg" alt=""><br>由于HTMLElement没有了strong reference，因此它会被ARC释放掉，进而asHTML引用的closure也会变成“孤魂野鬼”，ARC当然也不会放过它。因此，closure和类对象间的循环引用问题就解决了。</p>
+<ul>
+<li><strong>如果closure带有完整的类型描述，capture list必须写在参数列表前面:</strong></li>
+<li><strong> 如果我们要在capture list里添加多个成员，用逗号把它们分隔开,例如:</strong><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">class HTMLElment &#123;</div><div class="line">   let name: String</div><div class="line">   let text: String? </div><div class="line">   lazy var asHTML: Void -&gt; String = &#123; </div><div class="line">   // Capture list</div><div class="line">   [unowned self /*, other capture member*/] () -&gt; String in</div><div class="line">   if let text = self.text &#123; </div><div class="line">     return &quot;&lt;\(self.name)&gt;\(self.text)&quot; </div><div class="line">   &#125; else &#123;</div><div class="line">     return &quot;&lt;\(self.name)&gt;&quot; </div><div class="line">   &#125;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<blockquote>
+<p>在利用Capture list解决了Closure中循环引用的问题以后,还要注意一点: 如果在某个Clusure中捕获到到self可以为nil,那我们就要回到上一篇开头所讲的那样,判断一下self,然后再进行处理了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123;[weak self] in </div><div class="line">    if let weSelf = self&#123; 执行代码&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+</blockquote>
+<h4 id="好了-以上就是我总结的所有关于swfit中Reference-cycle-的知识了"><a href="#好了-以上就是我总结的所有关于swfit中Reference-cycle-的知识了" class="headerlink" title="好了,以上就是我总结的所有关于swfit中Reference cycle 的知识了!~"></a>好了,以上就是我总结的所有关于swfit中Reference cycle 的知识了!~</h4>
       
 
       
@@ -228,17 +215,6 @@
     <div class="article-info article-info-index">
       
       
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
       
 
       
@@ -289,7 +265,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/" alt="微信分享二维码">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2017/08/30/扒一扒swift中的unowned和weak下/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -303,18 +279,9 @@
   
 <nav id="article-nav">
   
-    <a href="/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          (no title)
-        
-      </div>
-    </a>
   
-  
-    <a href="/2017/01/20/RxSwift文档翻译(上) /" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">RxSwift 文档翻译(上)</div>
+    <a href="/2017/08/30/扒一扒swift中的unowned和weak上/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title"></div>
       <i class="icon-circle-right"></i>
     </a>
   

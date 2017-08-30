@@ -6,31 +6,22 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>填坑记,Swift集成WeexSDK | 一江春水</title>
+  <title>一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
-<meta name="keywords" content="Swift">
+  <meta name="description" content="#   最近项目中踩到了Closure使用unowned和weak修饰self对象避免循环引用所带来的坑,之前不是太了解,Closure里面会用到self的地方,一般都是这样处理  1&amp;#123;[unowned self] in &amp;#125;  但是在一个网络请求的Closure回调里面,这样写总是会令程序crash掉,后来发现在这个Closure执行之前,self已经被释放了,在我们老大查阅了">
 <meta property="og:type" content="article">
-<meta property="og:title" content="填坑记,Swift集成WeexSDK">
-<meta property="og:url" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/index.html">
+<meta property="og:title" content="一江春水">
+<meta property="og:url" content="http://yoursite.com/2017/08/30/扒一扒swift中的unowned和weak上/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
+<meta property="og:description" content="#   最近项目中踩到了Closure使用unowned和weak修饰self对象避免循环引用所带来的坑,之前不是太了解,Closure里面会用到self的地方,一般都是这样处理  1&amp;#123;[unowned self] in &amp;#125;  但是在一个网络请求的Closure回调里面,这样写总是会令程序crash掉,后来发现在这个Closure执行之前,self已经被释放了,在我们老大查阅了">
 <meta property="og:locale" content="Chinese">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivx93i72fj313601iq3z.jpg">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivx9ptz8fj311o0fsn3w.jpg">
-<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tKfTcly1fivxa5zc5wj307805xq2v.jpg">
-<meta property="og:image" content="https://ws1.sinaimg.cn/large/006tKfTcly1fivxaxjrsjj30ly06owfj.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxbg9kf6j30je08mtac.jpg">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivxc3kn38j308c07fjrf.jpg">
-<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tKfTcly1fivxd1jjdlj30nm092wg4.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxdhqjgfj30dw03gaao.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxeiwzvlj305i05eq34.jpg">
-<meta property="og:updated_time" content="2017-08-25T09:21:56.000Z">
+<meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-sep-person-apt11@2x.jpg">
+<meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-reference-cycle@2x.jpg">
+<meta property="og:updated_time" content="2017-08-30T01:40:05.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="填坑记,Swift集成WeexSDK">
-<meta name="twitter:description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
-<meta name="twitter:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg">
+<meta name="twitter:title" content="一江春水">
+<meta name="twitter:description" content="#   最近项目中踩到了Closure使用unowned和weak修饰self对象避免循环引用所带来的坑,之前不是太了解,Closure里面会用到self的地方,一般都是这样处理  1&amp;#123;[unowned self] in &amp;#125;  但是在一个网络请求的Closure回调里面,这样写总是会令程序crash掉,后来发现在这个Closure执行之前,self已经被释放了,在我们老大查阅了">
+<meta name="twitter:image" content="https://dn-boxueio.qbox.me/bo-reading-sep-person-apt11@2x.jpg">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
   
@@ -154,41 +145,61 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-填坑记,Swift集成WeexSDK" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-扒一扒swift中的unowned和weak上" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      填坑记,Swift集成WeexSDK
-    </h1>
-  
-
-        
-        <a href="/2017/04/27/填坑记,Swift集成WeexSDK/" class="archive-article-date">
-  	<time datetime="2017-04-27T01:09:28.000Z" itemprop="datePublished">2017-04-27</time>
-  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
-      view <span id="busuanzi_value_page_pv"></span> times
-    </span>
-</a>
-<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
-</script>
-        
-      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h4 id="前言"><a href="#前言" class="headerlink" title="前言:"></a><strong>前言:</strong></h4><p>最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg" alt=""><br><a id="more"></a><br>首先,别告诉我你没有看过<a href="https://open.taobao.com/doc2/detail?spm=a219a.7629140.0.0.tFddsV&amp;&amp;docType=1&amp;articleId=104829" target="_blank" rel="external">Weex iOS SDK 集成指南</a>(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集成WeexSDK到你的项目里)如果第一步你完成的很丝滑,而且我也假装你看了Demo,完成了对”hello.js”的渲染,那我们很快就能进入正题,聊聊填坑的事儿了.<br>你如果已经看到<a href="https://weex.apache.org/cn/references/advanced/extend-to-ios.html" target="_blank" rel="external">iOS 扩展</a>的文档了,那么恭喜你,你已经迎来了第一个坑: <strong>自定义module</strong>,<img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivx93i72fj313601iq3z.jpg" alt=""><br>,这时候,兴奋的你赶紧跑到demo里面,去查看了这个宏,然后你点啊点,发现<img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivx9ptz8fj311o0fsn3w.jpg" alt=""><br>早已不写OC好多年的你表情肯定是这样的:</p>
-<p><img src="https://ws3.sinaimg.cn/large/006tKfTcly1fivxa5zc5wj307805xq2v.jpg" alt=""><br>别担心,阿里爸爸已经猜到了你会这样,所以他们建议你创建一个桥接文件把宏写进OC的类里,然后为这个OC类写一个Swift的扩展,在扩展里写你要传递给Weex的module方法<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>.具体的您往这儿看:<br>OC类WXEventModule的.h 实现<br><img src="https://ws1.sinaimg.cn/large/006tKfTcly1fivxaxjrsjj30ly06owfj.jpg" alt=""><br>OC类WXEventModule的.m 实现<br><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxbg9kf6j30je08mtac.jpg" alt=""><br>这时候,聪明可人的你可能发现了, “WeexTest-Swift.h”是个什么鬼?别担心,你只要把他改成”YouDemo-Swift.h”就行了.这个.h文件是系统自动生成的,用于在OC类里引用Swift实例,是一个隐形的文件,第一次引进来,只要编译一次就可以找到了.(其实<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>里面有说,但说的不够详细)<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivxc3kn38j308c07fjrf.jpg" alt=""></p>
-<p>然后在Swift类的扩展里这样:<br><img src="https://ws3.sinaimg.cn/large/006tKfTcly1fivxd1jjdlj30nm092wg4.jpg" alt=""><br>别忘了把你的module引入到桥接文件<br><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxdhqjgfj30dw03gaao.jpg" alt=""><br>最后,在AppDelegate里面注册一下你的module:</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="type">WXSDKEngine</span>.registerModule(<span class="string">"WXOpenpageModule"</span>, with: <span class="type">NSClassFromString</span>(<span class="string">"WXEventModule"</span>))</div></pre></td></tr></table></figure>
-<p>行了,自定义module的坑踩平了,放下键盘,拿起手机,打一盘王者农药压压惊吧!<br>接下来说一说Weex下载图片的坑,weexSDK 没有图片下载的能力，需要我们手动实现一个下载器WXImgLoaderDefaultImpl(英俊潇洒,懒癌晚期的我,直接克隆的演示Demo的下载器),细节没什么说的,你只要拖到你的项目里,然后在AppDelegate里注册一下就OK了</p>
-<pre><code class="Swift"><span class="type">WXSDKEngine</span>.registerHandler(<span class="type">WXImgLoaderDefaultImpl</span>(), with: <span class="type">NSProtocolFromString</span>(<span class="string">"WXImgLoaderProtocol"</span>))
-</code></pre>
-<p>####<strong>结束语:</strong><br>最后奉上我的一发Demo,<a href="https://github.com/15130886370/WeexTest" target="_blank" rel="external">传送门</a>,我觉得有必要介绍下这个Demo,我实现了一个扫描二维码功能,你可以用他扫描你们前端小伙伴部署到服务器的JSBundle链接,然后直接在控制器里拿到这个链接去渲染,这样开发测试起来还是很方便的嘛,如果帮到了你,也烦请您动动发财的小手,右上角点点star,毕竟做人最重要的是装逼嘛~~</p>
-<p><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxeiwzvlj305i05eq34.jpg" alt=""></p>
-<p>踩坑持续中,不间断更新,欢迎评论交流~!</p>
+        <p># </p>
+<blockquote>
+<p>最近项目中踩到了Closure使用unowned和weak修饰self对象避免循环引用所带来的坑,之前不是太了解,Closure里面会用到self的地方,一般都是这样处理</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;[unowned self] in &#125;</div></pre></td></tr></table></figure>
+<blockquote>
+<p>但是在一个网络请求的Closure回调里面,这样写总是会令程序crash掉,后来发现在这个Closure执行之前,self已经被释放了,在我们老大查阅了许多资料后把代码改成这样就ok了</p>
+</blockquote>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&#123;[weak self] in </div><div class="line">  if let weSelf = self&#123;</div><div class="line">      执行代码</div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>最近跟着<a href="https://boxueio.com/category/swift" target="_blank" rel="external">泊学网</a>(<em>被誉为最良心的swift视频教学网站</em>)的Mars讲师学习了关于swift中Reference cycle引起的内存泄漏方面的知识,总结一下,留着学习!~<br>那么,一起来扒一扒swift中unwoned和weak之间的恩恩怨怨吧~</p>
+<p>首先,想要弄明白unwoned和weak的区别,就一定要先明白他们能做什么,所以,我们就从Reference cycle引起的内存泄露说起吧!<br>大家都知道,swift会使用ARC（Automatic Reference Counting）帮我们打理内存,但是在有些时候,尤其是对象间存在互相引用的时候,就会由于reference cycle导致内存无法释放,而我们也需要时刻保持清醒,来避免内存泄露。那么</p>
+<p>####ARC是如何工作的呢?<br>Swift使用“引用计数（reference count）”来管理类对象的生命周期，避免类对象在“仍被使用”的时候被意外释放。为了观察reference count、对象构建和对象释放之间的关系，我们先来定义一个类：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">class Person &#123; </div><div class="line">let name: String</div><div class="line">init(name: String) &#123; </div><div class="line">      self.name = name print(&quot;\(name) is being initialized.&quot;)</div><div class="line">   &#125;</div><div class="line"> deinit &#123; </div><div class="line">      print(&quot;\(name) is being deinitialized.&quot;) </div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>接下来，我们观察下面代码的的执行过程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">var ref1: Person?</div><div class="line">var ref2: Person?</div><div class="line">// Mars is being initialized.</div><div class="line">// count = 1</div><div class="line">ref1 = Person(name: &quot;Mars&quot;)</div><div class="line">// count = 2</div><div class="line">ref2 = ref1</div><div class="line">// count = 1</div><div class="line">ref2 = nil</div><div class="line">// count = 0</div><div class="line">// Mars is being deinitialized.</div><div class="line">ref1 = nil</div></pre></td></tr></table></figure></p>
+<ul>
+<li>Person构造时，init被调用，只有一个变量引用了这个对象，此时的reference count为1；</li>
+<li>当我们把ref1赋值给ref2时，它们指向相同的对象，此时的reference count为2；</li>
+<li>当ref2为nil时，此时的reference count恢复为1；</li>
+<li>当ref1为nil时，reference count为0，Tennat的deinit被调用，对象被释放；<br>在上面的例子里，由于ref1和ref2都会导致Person的reference count加1，因此它们叫做strong reference。这是Swift中的默认行为。</li>
+</ul>
+<blockquote>
+<p>注意: <em>“和带有Garbage Collection的语言不同，当一个对象的reference count为0时，Swift会立即删除该对象。”</em></p>
+</blockquote>
+<h4 id="那么Reference-cycle-循环引用-又是怎么发生的呢"><a href="#那么Reference-cycle-循环引用-又是怎么发生的呢" class="headerlink" title="那么Reference cycle(循环引用)又是怎么发生的呢?"></a>那么Reference cycle(循环引用)又是怎么发生的呢?</h4><p>对于Person这样的单个对象，ARC可以很好的默默为我们工作。但是，当不同类对象之间存在相互引用时<br>，指向彼此的strong reference就会导致reference cycle。ARC无法释放它们之中的任何一个。来看一个例子，我们给Person添加一个Apartment：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">class Person &#123;</div><div class="line"> let name: String </div><div class="line"> var apartment: Apartment?</div><div class="line"> init(name: String) &#123;</div><div class="line">     self.name = name print(&quot;\(name) is being initialized.&quot;)</div><div class="line"> &#125; </div><div class="line">deinit &#123; </div><div class="line">    print(&quot;\(name) is being deinitialized.&quot;) </div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">class Apartment &#123; </div><div class="line"> let unit: String</div><div class="line"> var tenant: Person?</div><div class="line"> init(unit: String) &#123; </div><div class="line">    self.unit = unit print(&quot;Apartment \(unit) is being initialized.&quot;)</div><div class="line"> &#125;</div><div class="line"> deinit &#123; </div><div class="line">    print(&quot;Apartment \(unit) is being deinitialized.&quot;) </div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>由于Person不一定会租Apartment(公寓)，Apartment(公寓)也不一定有房客，因此，Person.apartment和Apartment.tenant都是一个Optional，它们可以为nil。<br>接下来，我们分别创建一个Person和Apartment对象，然后把变量设置为nil，就可以看到Person和Apartment被构建和销毁了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">// Mars is being initialized</div><div class="line">// count = 1</div><div class="line">var mars: Person? = Person(name: &quot;Mars&quot;)</div><div class="line">// Apartment 11 is being initialized</div><div class="line">// count = 1</div><div class="line">var apt11: Apartment? = Apartment(unit: &quot;11&quot;)</div><div class="line">// count = 0</div><div class="line">// Mars is being deinitializedmars = nil</div><div class="line">// count = 0</div><div class="line">// apartment is being deinitializedapt11 = nil</div></pre></td></tr></table></figure></p>
+<p><img src="https://dn-boxueio.qbox.me/bo-reading-sep-person-apt11@2x.jpg" alt=""><br>接下来，如果我们让mars和apartment分别指向彼此：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">// ... Create mars and apartment</div><div class="line">// apartment.count = 2</div><div class="line">mars!.apartment = apt11</div><div class="line">// mars.count = 2</div><div class="line">apt11!.tenant = mars</div><div class="line">// ... Set mars and apartment to nil</div><div class="line">mars = nil</div><div class="line">apt11 = nil</div></pre></td></tr></table></figure></p>
+<p><img src="https://dn-boxueio.qbox.me/bo-reading-reference-cycle@2x.jpg" alt=""><br>这时，尽管我们把mars和apt11设置为nil，Person和Apartmetn的deinit也不会被调用了。因为它们的两个member（apartment和tenant）是一个strong reference，指向了彼此，让对象仍旧“存活”在内存里。但是，mars和apt11已经被设置成nil，我们也已经无能为力了。这就是类对象之间的reference cycle。</p>
+<h4 id="三种Reference-cycle的解决方案"><a href="#三种Reference-cycle的解决方案" class="headerlink" title="三种Reference cycle的解决方案"></a>三种Reference cycle的解决方案</h4><p><strong>1. class member允许为nil时 </strong><br>在我们之前的例子里，Apartment和Person中引起reference cycle的数据成员都允许为nil，对于这种情况，我们可以像下面这样使用weak reference来解决reference cycle：</p>
+<blockquote>
+<p>weak var name: <em>Type</em></p>
+</blockquote>
+<p>对于一个weak reference来说：</p>
+<ul>
+<li>当其指向类对象时，并不会添加类对象的引用计数；</li>
+<li>当其指向的类对象不存在时，ARC会自动把weak reference设置为nil；</li>
+</ul>
+<blockquote>
+<p>注意: <em> “由于weak reference的特定，它只能被定义成var。”</em></p>
+</blockquote>
+<p>了解了weak reference特性之后，我们可以把Apartment修改成这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">class Apartment &#123; </div><div class="line">  let unit: String</div><div class="line">  weak var tenant: Person? </div><div class="line">// omit for simplicity...</div><div class="line">&#125;</div><div class="line">var mars: Person? = Person(name: &quot;Mars&quot;)</div><div class="line">var apt11: Apartment? = Apartment(unit: &quot;11&quot;, owner: mars!)</div><div class="line">mars!.apartment = apt11</div><div class="line">apt11!.tenant = mars</div><div class="line">mars = nil</div><div class="line">apt11 = nil</div><div class="line">``` </div><div class="line">mars设置为nil的时候，Apartment和Person的关系就变成了这样：</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-mars-nil@2x.jpg)</div><div class="line">由于已经没有strong reference指向mars，于是mars就被ARC释放了。接下来，我们把apt11设置成nil：</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-apt11-nil@2x.jpg)</div><div class="line">这时，也没有任何strong reference指向apt11了，它也会被ARC释放。</div><div class="line">这就是当引起reference cycle的两个member允许为nil时，我们使用的解决方案。所以</div><div class="line"></div><div class="line">&gt;  weak reference用于解决成员允许为nil的reference cycle 。</div><div class="line"></div><div class="line">**2. 当有一个member不能为nil时**</div><div class="line">来看另外一个应用场景。我们把Person改成下面这样：</div></pre></td></tr></table></figure></p>
+<p>class Person {<br>  let name: String<br>  var apartment: Apartment?<br>  var property: Apartment? // omit for simplicity…<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">由于不是每个人名下都有房产，因此property允许为nil，我们把它定义为Apartment optional。接下来，把Apartment的代码改成这样：</div></pre></td></tr></table></figure></p>
+<p>class Apartment {<br>  let unit: String<br>  weak var tenant: Person?<br>  let owner: Person<br>  init(unit: String, owner: Person) {<br>  self.unit = unit<br>  self.owner = owner<br>  print(“Apartment (unit) is being initialized.”)<br> } // omit for simplicity…<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">由于每个Apartment一定会有房东，不能为nil，因此，我们把它定义为Person。</div><div class="line">接下来，当我们再次创建mars和apt11的时候：</div></pre></td></tr></table></figure></p>
+<p>var mars: Person? = Person(name: “Mars”)<br>var apt11: Apartment? = Apartment(unit: “11”, owner: mars!)<br>mars!.apartment = apt11<br>apt11!.tenant = mars<br>mars = nil<br>apt11 = nil<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-owner-ref-cycle@2x.jpg)</div><div class="line">在上面这个图里，即使我们把mars和apt11设置为nil：</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-owner-ref-cycle1@2x.jpg)</div><div class="line">owner这个strong reference会让mars存活，进而apartment会让apt11存活。这就形成了一个新的reference cycl。</div><div class="line">解决办法很简单,我们把owner设置为unowned就ok了!</div></pre></td></tr></table></figure></p>
+<p>class Apartment {<br>    let unit: String<br>    weak var tenant: Person?<br>    unowned let owner: Person // Omit for simplicity…<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">和strong reference相比，unowned reference只有一个特别：不会引起对象引用计数的变化。因此，当我们把mars和apt11设置为nil时，对象的关系就会变成这样:</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-owner-ref-cycle2@2x.jpg)</div><div class="line">此时，已经没有strong reference引用mars，它会先被ARC释放掉，之后，引用apt11的apartment也不存在了，apt11也会被ARC清除。这就是reference cycle中一方不能为nil时的解决方案。</div><div class="line"></div><div class="line">**3.当两个member都不允许为nil的时候**</div><div class="line">一个国家不可能没有首都，一个城市也不可能没有国家归属，因此，它们都只能是普通的类对象，而不能是一个Optional。接下来，我们来处理它们的初始化问题。首先，我们按照一般的方式处理City：</div></pre></td></tr></table></figure></p>
+<p>class City {<br>   let name: String<br>   let country: Country<br>   init(name: String, country: Country) {<br>   self.name = name<br>   self.country = country<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">然后，处理Country</div></pre></td></tr></table></figure></p>
+<p>class Country {<br>   let name: String<br>   var capital: City !<br>  init(name: String, capitalName: String) {<br>  self.name = name<br>  self.capital = City(name: capitalName, country: self)<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">我们分别定义一个变量：</div></pre></td></tr></table></figure></p>
+<p>var cn: Country? = Country(name: “China”, capitalName: “Beijing”)<br>var bj: City? = City(name: “Beijing”, country: cn!)<br>cn = nil<br>bj = nil<br>```<br>经历过之前的多个例子之后，我们很快就可以发现，当cn和bj为nil时，cn.captical和其内建的City仍旧会保持彼此“存活”在内存里，而解决这个问题的办法其实之前我们已经处理过了，把country定义为unowned就可以了。</p>
+<blockquote>
+<p><em>“unowned reference和implicitly unwrapped optional配合在一起，用于解决引起reference cycle的两个成员都不允许为nil的情况。”</em></p>
+</blockquote>
+<p>####上篇完</p>
 
       
 
@@ -228,17 +239,6 @@
     <div class="article-info article-info-index">
       
       
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
       
 
       
@@ -289,7 +289,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/" alt="微信分享二维码">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2017/08/30/扒一扒swift中的unowned和weak上/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -303,7 +303,7 @@
   
 <nav id="article-nav">
   
-    <a href="/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2017/08/30/扒一扒swift中的unowned和weak下/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
@@ -313,8 +313,8 @@
     </a>
   
   
-    <a href="/2017/01/20/RxSwift文档翻译(上) /" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">RxSwift 文档翻译(上)</div>
+    <a href="/2017/08/30/css语法部分/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title"></div>
       <i class="icon-circle-right"></i>
     </a>
   

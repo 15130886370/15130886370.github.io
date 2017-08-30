@@ -6,31 +6,24 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>填坑记,Swift集成WeexSDK | 一江春水</title>
+  <title>一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
-<meta name="keywords" content="Swift">
+  <meta name="description" content="#  ##前言:   在移动大前端的局势下,原生应用更新迭代的速度越来越快,iOS热更新乏力,ReactNative,Weex这些框架日趋成熟,大有一统三端的气势.我们作为iOS开发者,为了适应互联网生态环境,就必须不断的学习进步.最近公司项目集成了Weex,如果不懂Web前端的一些代码机制,加之Weex文档不太健全,我发现很难跟前端小伙伴对接(同事跟你装逼的时候,你如果是一脸懵逼的表情,那你就输">
 <meta property="og:type" content="article">
-<meta property="og:title" content="填坑记,Swift集成WeexSDK">
-<meta property="og:url" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/index.html">
+<meta property="og:title" content="一江春水">
+<meta property="og:url" content="http://yoursite.com/2017/08/30/web前端学习第一课,HTML语法/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
+<meta property="og:description" content="#  ##前言:   在移动大前端的局势下,原生应用更新迭代的速度越来越快,iOS热更新乏力,ReactNative,Weex这些框架日趋成熟,大有一统三端的气势.我们作为iOS开发者,为了适应互联网生态环境,就必须不断的学习进步.最近公司项目集成了Weex,如果不懂Web前端的一些代码机制,加之Weex文档不太健全,我发现很难跟前端小伙伴对接(同事跟你装逼的时候,你如果是一脸懵逼的表情,那你就输">
 <meta property="og:locale" content="Chinese">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivx93i72fj313601iq3z.jpg">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivx9ptz8fj311o0fsn3w.jpg">
-<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tKfTcly1fivxa5zc5wj307805xq2v.jpg">
-<meta property="og:image" content="https://ws1.sinaimg.cn/large/006tKfTcly1fivxaxjrsjj30ly06owfj.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxbg9kf6j30je08mtac.jpg">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivxc3kn38j308c07fjrf.jpg">
-<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tKfTcly1fivxd1jjdlj30nm092wg4.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxdhqjgfj30dw03gaao.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxeiwzvlj305i05eq34.jpg">
-<meta property="og:updated_time" content="2017-08-25T09:21:56.000Z">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1526313-47c0d6a2fe774225.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/480">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1526313-7a623b6daac1f503.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1526313-296ac8f36a67e68e.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1526313-f73a712091a8cec1.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240">
+<meta property="og:updated_time" content="2017-08-30T01:38:21.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="填坑记,Swift集成WeexSDK">
-<meta name="twitter:description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
-<meta name="twitter:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg">
+<meta name="twitter:title" content="一江春水">
+<meta name="twitter:description" content="#  ##前言:   在移动大前端的局势下,原生应用更新迭代的速度越来越快,iOS热更新乏力,ReactNative,Weex这些框架日趋成熟,大有一统三端的气势.我们作为iOS开发者,为了适应互联网生态环境,就必须不断的学习进步.最近公司项目集成了Weex,如果不懂Web前端的一些代码机制,加之Weex文档不太健全,我发现很难跟前端小伙伴对接(同事跟你装逼的时候,你如果是一脸懵逼的表情,那你就输">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1526313-47c0d6a2fe774225.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/480">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
   
@@ -154,41 +147,139 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-填坑记,Swift集成WeexSDK" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-web前端学习第一课,HTML语法" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      填坑记,Swift集成WeexSDK
-    </h1>
-  
-
-        
-        <a href="/2017/04/27/填坑记,Swift集成WeexSDK/" class="archive-article-date">
-  	<time datetime="2017-04-27T01:09:28.000Z" itemprop="datePublished">2017-04-27</time>
-  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
-      view <span id="busuanzi_value_page_pv"></span> times
-    </span>
-</a>
-<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
-</script>
-        
-      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h4 id="前言"><a href="#前言" class="headerlink" title="前言:"></a><strong>前言:</strong></h4><p>最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg" alt=""><br><a id="more"></a><br>首先,别告诉我你没有看过<a href="https://open.taobao.com/doc2/detail?spm=a219a.7629140.0.0.tFddsV&amp;&amp;docType=1&amp;articleId=104829" target="_blank" rel="external">Weex iOS SDK 集成指南</a>(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集成WeexSDK到你的项目里)如果第一步你完成的很丝滑,而且我也假装你看了Demo,完成了对”hello.js”的渲染,那我们很快就能进入正题,聊聊填坑的事儿了.<br>你如果已经看到<a href="https://weex.apache.org/cn/references/advanced/extend-to-ios.html" target="_blank" rel="external">iOS 扩展</a>的文档了,那么恭喜你,你已经迎来了第一个坑: <strong>自定义module</strong>,<img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivx93i72fj313601iq3z.jpg" alt=""><br>,这时候,兴奋的你赶紧跑到demo里面,去查看了这个宏,然后你点啊点,发现<img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivx9ptz8fj311o0fsn3w.jpg" alt=""><br>早已不写OC好多年的你表情肯定是这样的:</p>
-<p><img src="https://ws3.sinaimg.cn/large/006tKfTcly1fivxa5zc5wj307805xq2v.jpg" alt=""><br>别担心,阿里爸爸已经猜到了你会这样,所以他们建议你创建一个桥接文件把宏写进OC的类里,然后为这个OC类写一个Swift的扩展,在扩展里写你要传递给Weex的module方法<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>.具体的您往这儿看:<br>OC类WXEventModule的.h 实现<br><img src="https://ws1.sinaimg.cn/large/006tKfTcly1fivxaxjrsjj30ly06owfj.jpg" alt=""><br>OC类WXEventModule的.m 实现<br><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxbg9kf6j30je08mtac.jpg" alt=""><br>这时候,聪明可人的你可能发现了, “WeexTest-Swift.h”是个什么鬼?别担心,你只要把他改成”YouDemo-Swift.h”就行了.这个.h文件是系统自动生成的,用于在OC类里引用Swift实例,是一个隐形的文件,第一次引进来,只要编译一次就可以找到了.(其实<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>里面有说,但说的不够详细)<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivxc3kn38j308c07fjrf.jpg" alt=""></p>
-<p>然后在Swift类的扩展里这样:<br><img src="https://ws3.sinaimg.cn/large/006tKfTcly1fivxd1jjdlj30nm092wg4.jpg" alt=""><br>别忘了把你的module引入到桥接文件<br><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxdhqjgfj30dw03gaao.jpg" alt=""><br>最后,在AppDelegate里面注册一下你的module:</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="type">WXSDKEngine</span>.registerModule(<span class="string">"WXOpenpageModule"</span>, with: <span class="type">NSClassFromString</span>(<span class="string">"WXEventModule"</span>))</div></pre></td></tr></table></figure>
-<p>行了,自定义module的坑踩平了,放下键盘,拿起手机,打一盘王者农药压压惊吧!<br>接下来说一说Weex下载图片的坑,weexSDK 没有图片下载的能力，需要我们手动实现一个下载器WXImgLoaderDefaultImpl(英俊潇洒,懒癌晚期的我,直接克隆的演示Demo的下载器),细节没什么说的,你只要拖到你的项目里,然后在AppDelegate里注册一下就OK了</p>
-<pre><code class="Swift"><span class="type">WXSDKEngine</span>.registerHandler(<span class="type">WXImgLoaderDefaultImpl</span>(), with: <span class="type">NSProtocolFromString</span>(<span class="string">"WXImgLoaderProtocol"</span>))
-</code></pre>
-<p>####<strong>结束语:</strong><br>最后奉上我的一发Demo,<a href="https://github.com/15130886370/WeexTest" target="_blank" rel="external">传送门</a>,我觉得有必要介绍下这个Demo,我实现了一个扫描二维码功能,你可以用他扫描你们前端小伙伴部署到服务器的JSBundle链接,然后直接在控制器里拿到这个链接去渲染,这样开发测试起来还是很方便的嘛,如果帮到了你,也烦请您动动发财的小手,右上角点点star,毕竟做人最重要的是装逼嘛~~</p>
-<p><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxeiwzvlj305i05eq34.jpg" alt=""></p>
-<p>踩坑持续中,不间断更新,欢迎评论交流~!</p>
+        <p># </p>
+<p>##前言: </p>
+<blockquote>
+<p>在移动大前端的局势下,原生应用更新迭代的速度越来越快,iOS热更新乏力,ReactNative,Weex这些框架日趋成熟,大有一统三端的气势.我们作为iOS开发者,为了适应互联网生态环境,就必须不断的学习进步.最近公司项目集成了Weex,如果不懂Web前端的一些代码机制,加之Weex文档不太健全,我发现很难跟前端小伙伴对接(同事跟你装逼的时候,你如果是一脸懵逼的表情,那你就输了).所以我便励志学习Web前端知识,从HTML + CSS 到JS,再到当下热门的Vue,我也会不断的开坑,填坑,那今天就放上我的HTML语法学习笔记,欢迎有同样兴趣的小伙伴一起交流学习.</p>
+</blockquote>
+<ul>
+<li><p>1 HTML的注释 <!--注释文字 -->   </p>
+</li>
+<li><p>2 标签</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">标签的语法:</div><div class="line">标签分为开始标签和结束标签.结束标签比开始标签多了一个&quot;/&quot;</div><div class="line">我们对&lt;em&gt;、&lt;strong&gt;、&lt;span&gt;这三个标签进行一下总结： </div><div class="line">&lt;em&gt;和&lt;strong&gt;标签是为了强调一段话中的关键字时使用，它们的语义是强调。</div><div class="line">&lt;span&gt;标签是没有语义的，它的作用就是为了设置单独的样式用的</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li><p>3 认识html文件基本结构</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;html&gt;</div><div class="line">        &lt;head&gt;...&lt;/head&gt;</div><div class="line">        &lt;body&gt;...&lt;/body&gt;</div><div class="line">    &lt;/html&gt;</div></pre></td></tr></table></figure>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"> 代码讲解：</div><div class="line">1. &lt;html&gt;&lt;/html&gt;称为根标签，所有的网页标签都在&lt;html&gt;&lt;/html&gt;中。</div><div class="line">2. &lt;head&gt; 标签用于定义文档的头部，它是所有头部元素的容器。头部元素有</div><div class="line">   &lt;title&gt;、&lt;script&gt;、 &lt;style&gt;、&lt;link&gt;、 &lt;meta&gt;等标签</div><div class="line">3. 在&lt;body&gt;和&lt;/body&gt;标签之间的内容是网页的主要内容，如&lt;h1&gt;、&lt;p&gt;、&lt;a&gt;、&lt;img&gt;</div><div class="line">   等网页内容标签，在这里的标签中的内容会在浏览器中显示出来。</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li><p>4 head标签</p>
+  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>...<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">meta</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">link</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="undefined">...</span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined">...</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>标签：在<span class="tag">&lt;<span class="name">title</span>&gt;</span>和<span class="tag">&lt;/<span class="name">title</span>&gt;</span>标签之间的文字内容是网页的标题信息，它会出现在</div><div class="line"> 浏览器的标题栏中。网页的title标签用于告诉用户和搜索引擎这个网页的主要内容是什么，</div><div class="line"> 搜索引擎可以通过网页标题，迅速的判断出网页的主题。每个</div><div class="line"> 网页的内容都是不同的，每个网页都应该有一个独一无二的title。</div></pre></td></tr></table></figure>
+</li>
+<li><p>5 body标签(网页上显示的内容)</p>
+</li>
+<li><p>6 p标签</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;p&gt;段落文本&lt;/p&gt;</div><div class="line">注意一段文字一个&lt;p&gt;标签，如在一篇新闻文章中有3段文字，就要把这3个段落分别放到3个</div><div class="line">&lt;p&gt;标签中。</div></pre></td></tr></table></figure>
+</li>
+<li><p>7 hx标签</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">用过markdown语法的都知道,&lt;hx&gt;标签用来制作文章的标题.h1,h2,h3,h4,h5...标题</div><div class="line">文字的字号按照从大到小的顺序排列.</div></pre></td></tr></table></figure>
+</li>
+<li><p>6 长文本的引用</p>
+  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">    <span class="tag">&lt;<span class="name">blockquote</span>&gt;</span>长文本的引用: 如想在我的文章中引用李白《关山月》中的诗句，因为引用文本</div><div class="line">比较长，所以使用<span class="tag">&lt;/<span class="name">blockquote</span>&gt;</span> </div><div class="line">    <span class="tag">&lt;<span class="name">blockquote</span>&gt;</span>明月出天山，苍茫云海间。长风几万里，吹度玉门关。汉下白登道，胡窥青海湾。</div><div class="line">    由来征战地，不见有人还。 戍客望边色，思归多苦颜。高楼当此夜，叹息未应闲。</div><div class="line">   <span class="tag">&lt;/<span class="name">blockquote</span>&gt;</span></div></pre></td></tr></table></figure>
+</li>
+<li><p>7 br标签分行显示文本</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">怎么可以让每一句诗词后面加入一个折行呢？那就可以用到&lt;br /&gt;标签了，在需要加回车换行</div><div class="line">的地方加入&lt;br /&gt;，&lt;br /&gt;标签作用相当于word文档中的回车。(html4.01版本写法是</div><div class="line">&quot; &lt;br&gt; &quot;)</div><div class="line"></div><div class="line">注意：在 html 代码中输入回车、空格都是没有作用的。在html文本中想输入回车换行，就必</div><div class="line">须输入&lt;br /&gt;。</div><div class="line">而 &amp;nbsp 代表空格符.</div></pre></td></tr></table></figure>
+</li>
+<li><p>8 hr 分割线(添加水平横线,就是一条分割线,hr是一个空标签,貌似没什么卵用)    </p>
+</li>
+<li><p>9 address标签,为网页加入地址信息</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;address&gt;联系地址信息&lt;/address&gt;</div><div class="line">例如: &lt;address&gt;文档编写：lilian 北京市西城区德外大街10号&lt;/address&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>10 code标签加入代码</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">其实这些常识性的东西我都不想记的,但是为了方便以后用到的时候查阅,忍了.</div><div class="line">代码:</div><div class="line">&lt;code&gt;var i=i+300;&lt;/code&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>11 使用pre标签加入大段代码</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;pre&gt;</div><div class="line">var message=&quot;欢迎&quot;;</div><div class="line">for(var i=1;i&lt;=10;i++)</div><div class="line">&#123;</div><div class="line">    alert(message);</div><div class="line">&#125;</div><div class="line">&lt;/pre&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>12 使用ul,添加信息列表</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;ul&gt;</div><div class="line">  &lt;li&gt;精彩少年&lt;/li&gt;</div><div class="line">  &lt;li&gt;美丽突然出现&lt;/li&gt;</div><div class="line">  &lt;li&gt;触动心灵的旋律&lt;/li&gt;</div><div class="line">&lt;/ul&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>13 使用ol来制作有序列表的展示</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;ol&gt;</div><div class="line">   &lt;li&gt;前端开发面试心法 &lt;/li&gt;</div><div class="line">   &lt;li&gt;零基础学习html&lt;/li&gt;</div><div class="line">   &lt;li&gt;JavaScript全攻略&lt;/li&gt;</div><div class="line">&lt;/ol&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>14 认识div在排版中的作用</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">  在网页制作过程过中，可以把一些独立的逻辑部分划分出来，放在一个div标签中，这个&lt;div&gt;</div><div class="line">标签的作用就相当于一个容器。语法：&lt; div&gt;…&lt; /div&gt;</div><div class="line">  确定逻辑部分：</div><div class="line">什么是逻辑部分？它是页面上相互关联的一组元素。如网页中的独立的栏目版块，就是一个典型的</div><div class="line">逻辑部分。如下图所示：图中用红色边框标出的部分就是一个逻辑部分，就可以使用&lt;div&gt;标签作</div><div class="line">为容器。</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://upload-images.jianshu.io/upload_images/1526313-47c0d6a2fe774225.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/480" alt="14954178137684.jpg"></p>
+<ul>
+<li><p>15 给div命名,使逻辑更加清晰</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">在上一小节中，我们把一些标签放进&lt;div&gt;里，划分出一个独立的逻辑部分。为了使逻辑更加清</div><div class="line">晰，我们可以为这一个独立的逻辑部分设置一个名称，用id属性来为&lt;div&gt;提供唯一的名称，这</div><div class="line">个就像我们每个人都有一个身份证号，这个身份证号是唯一标识我们的身份的，也是必须唯一的。</div><div class="line">语法: &lt;div  id=&quot;版块名称&quot;&gt;…&lt;/div&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>16 table标签,网页上的表格<br>  太长了,很基础,懒得写,直接贴连接了 <a href="http://www.imooc.com/code/292" target="_blank" rel="external">慕课网</a></p>
+</li>
+<li><p>17 为表格添加css边框 </p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt; style type=&quot;text/css&quot;&gt;</div><div class="line">table tr td,th&#123;border:1px solid #000;&#125;</div><div class="line">&lt; /style&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>18 为表格添加标题和摘要</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;table summary = &quot;2012年到2013年库存记录&quot;&gt;</div><div class="line">    &lt;caption&gt;我是标题&lt;/caption&gt;</div><div class="line">    &lt;tr&gt;</div><div class="line">          &lt;td&gt;...&lt;/td&gt;</div><div class="line">          &lt;td&gt;...&lt;/td&gt;</div><div class="line">     &lt;/tr&gt; </div><div class="line">&lt;/table&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>19 使用a标签链接到另一个页面</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;a  href=&quot;http://www.imooc.com&quot;  title=&quot;点击进入慕课网&quot;&gt;click here!&lt;/a&gt; </div><div class="line"> &lt;a  href=&quot;http://www.imooc.com&quot;  title=&quot;点击进入慕课网&quot;&gt;click here!&lt;/a&gt;</div><div class="line">上面例子作用是单击click here!文字，网页链接到http://www.imooc.com这个网页。</div><div class="line">title属性的作用，鼠标滑过链接文字时会显示这个属性的文本内容。这个属性在实际网页开发中</div><div class="line">作用很大，主要方便搜索引擎了解链接地址的内容（语义化更友好)</div><div class="line">    ```  </div><div class="line">* 20 在新建浏览器窗口中打开链接</div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><a>标签在默认情况下，链接的网页是在当前浏览器窗口中打开，有时我们需要在新的浏览器窗口<br>中打开.<br>  <a href="目标网址" target="_blank">click here!</a><br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">* 21 插入图片标签</div></pre></td></tr></table></figure></a></p>
+<pre><code>语法: ![](图片地址)
+1、src：标识图像的位置；
+2、alt：指定图像的描述性文本，当图像不可见时（下载不成功时），可看到该属性指定的文本；
+3、title：提供在图像可见时对图像的描述(鼠标滑过图片时显示的文本)；
+4、图像可以是GIF，PNG，JPEG格式的图像文件。
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">* 22 使用表单标签,与用户交互</div><div class="line"></div><div class="line">    ```HTML</div><div class="line">    网站交互的form表单,可以把浏览者输出的数据传送到服务器端</div><div class="line">    语法: &lt; form method = &quot;post/get&quot; action = &quot;save.php&quot;&gt; &lt; /form&gt;</div><div class="line">    1.&lt;form&gt; ：&lt;form&gt;标签是成对出现的，以&lt;form&gt;开始，以&lt;/form&gt;结束。</div><div class="line">    2.action ：浏览者输入的数据被传送到的地方,比如一个PHP页面(save.php)。</div><div class="line">    3.method ：数据传送的方式（get/post）。</div><div class="line">    代码如下:</div><div class="line">    &lt;form    method=&quot;post&quot;   action=&quot;save.php&quot;&gt;</div><div class="line">        &lt;label for=&quot;username&quot;&gt;用户名:&lt;/label&gt;</div><div class="line">        &lt;input type=&quot;text&quot; name=&quot;username&quot; /&gt;</div><div class="line">        &lt;label for=&quot;pass&quot;&gt;密码:&lt;/label&gt;</div><div class="line">        &lt;input type=&quot;password&quot; name=&quot;pass&quot; /&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
+</code></pre><ul>
+<li><p>23 文本输入框,密码输入框 </p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;form&gt;</div><div class="line">        &lt;input type = &quot;text/password&quot; name = &quot;名称&quot; value = &quot;文本&quot;/&gt;</div><div class="line">&lt;/form&gt;</div><div class="line">type: 当type = &quot;text&quot;时,输入框为文本输入框,当type = &quot;password&quot;时,输入框为密码</div><div class="line">输入框.</div><div class="line">name: 为文本框命名，以备后台程序ASP 、PHP使用。</div><div class="line">value: 为输入框设置默认值.(一般起到提示作用)</div></pre></td></tr></table></figure>
+</li>
+<li><p>24 文本域,支持多行文字输入</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">当用户需要在表单中输入大段文字时，需要用到文本输入域。</div><div class="line">语法:</div><div class="line">&lt;textarea rows = &quot;行数&quot; cols = &quot;列数&quot;&gt;</div><div class="line">这里可以输入默认值</div><div class="line">&lt;/textarea&gt;</div><div class="line">举例:</div><div class="line">&lt;form method = &quot;get&quot; action = &quot;save.php&quot;&gt;</div><div class="line">    &lt;label&gt;联系我们&lt;/label&gt;</div><div class="line">    &lt;textarea cols = &quot;50&quot; rows = &quot;10&quot;&gt;</div><div class="line">    这里输入内容</div><div class="line">    &lt;/textarea&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>25 使用单选框和复选框让用户选择</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">在使用表单设计调查表时，为了减少用户的操作，使用选择框是一个好主意，html有两种选择框,</div><div class="line">单选框和复选框,单选框只能选择一项,复选框可以选择任意多项.</div><div class="line">语法:</div><div class="line">&lt;input type = &quot;radio/checkbox&quot; value = &quot;值&quot; name = &quot;名称&quot; </div><div class="line">checked = &quot;checked&quot;/&gt;</div><div class="line">1、type:</div><div class="line">   当 type=&quot;radio&quot; 时，控件为单选框</div><div class="line">   当 type=&quot;checkbox&quot; 时，控件为复选框</div><div class="line">2、value：提交数据到服务器的值（后台程序PHP使用）</div><div class="line">3、name：为控件命名，以备后台程序 ASP、PHP 使用</div><div class="line">4、checked：当设置 checked=&quot;checked&quot; 时，该选项被默认选中</div><div class="line">如下面代码：</div></pre></td></tr></table></figure>
+<p><img src="http://upload-images.jianshu.io/upload_images/1526313-7a623b6daac1f503.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14950723890155.jpg"></p>
+</li>
+</ul>
+<p>显示结果:</p>
+<p><img src="http://upload-images.jianshu.io/upload_images/1526313-296ac8f36a67e68e.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14950724063290.jpg"></p>
+<p>注意: 同一组单选按钮,name取值一定要一致</p>
+<ul>
+<li><p>26 下拉列表:</p>
+  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt; <span class="attr">form</span> <span class="attr">action</span>=<span class="string">"save.php"</span> <span class="attr">method</span>=<span class="string">"post"</span> &gt;</span></div><div class="line">    <span class="tag">&lt; <span class="attr">label</span>&gt;</span>爱好:<span class="tag">&lt; /<span class="attr">label</span>&gt;</span></div><div class="line">    <span class="tag">&lt; <span class="attr">select</span>&gt;</span></div><div class="line">      <span class="tag">&lt; <span class="attr">option</span> <span class="attr">value</span>=<span class="string">"看书"</span>&gt;</span>看书<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">      <span class="tag">&lt; <span class="attr">option</span> <span class="attr">value</span>=<span class="string">"旅游"</span>&gt;</span>旅游<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">      <span class="tag">&lt; <span class="attr">option</span> <span class="attr">value</span>=<span class="string">"运动"</span>&gt;</span>运动<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">      <span class="tag">&lt; <span class="attr">option</span> <span class="attr">value</span>=<span class="string">"购物"</span>&gt;</span>购物<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">    <span class="tag">&lt; /<span class="attr">select</span>&gt;</span></div><div class="line"><span class="tag">&lt; /<span class="attr">form</span>&gt;</span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+<p><img src="http://upload-images.jianshu.io/upload_images/1526313-f73a712091a8cec1.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="14950745042054.jpg"></p>
+<p>设置 selected = “selected” 该选项默认选中    </p>
+<ul>
+<li><p>27 使用下拉列表框进行多选</p>
+  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">在select标签中设置 multiple = "multiple" 可    以实现多选功能,在windows操作</div><div class="line">系统下,进行多选时按下Ctrl键同事进行单击(Mac下使用Command + 单击),可以选择多个</div><div class="line">选项.</div><div class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">name</span> = <span class="string">"iForm"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">label</span>&gt;</span>爱好: <span class="tag">&lt;/<span class="name">label</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">select</span> <span class="attr">multiple</span> = <span class="string">"multiple"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span> = <span class="string">"读书"</span>&gt;</span>读书<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span> = <span class="string">"旅游"</span>&gt;</span>读书<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span> = <span class="string">"购物"</span>&gt;</span>读书<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">select</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></div></pre></td></tr></table></figure>
+</li>
+</ul>
+<ul>
+<li><p>28 使用提交按钮,提交数据</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;input type = &quot;submit&quot; value = &quot;提交&quot;&gt;</div><div class="line">type：只有当type值设置为submit时，按钮才有提交作用</div><div class="line">value：按钮上显示的文字 </div><div class="line">&lt;form method = &quot;get&quot; action = &quot;save.php&quot;&gt;</div><div class="line">    &lt;label for = &quot;myName&quot;&gt; 姓名 &lt;/label&gt;</div><div class="line">    &lt;input type = &quot;text&quot; value = &quot;&quot; name = &quot;myName&quot;/&gt;</div><div class="line">    &lt;input type = submit value = &quot;提交&quot; name = &quot;submitBtn&quot; /&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>29 使用重置按钮,重置表单信息</p>
+  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">当用户需要重置表单信息到初始时的状态时，比如用户输入“用户名”后，发现书写有误，可以使</div><div class="line">用重置按钮使输入框恢复到初始状态。只需要把type设置为&quot;reset&quot;就可以。</div><div class="line">&lt;input type = &quot;reset&quot; value = &quot;重置&quot;&gt;</div><div class="line">举栗:</div><div class="line">&lt;form method = &quot;get&quot; action = &quot;save.php&quot;&gt;</div><div class="line">    &lt;label for = &quot;myName&quot;&gt; 姓名 &lt;/label&gt;</div><div class="line">    &lt;input type = &quot;text&quot; value = &quot;&quot; name = &quot;myName&quot; /&gt;</div><div class="line">    &lt;input type = &quot;reset&quot; value = &quot;重置&quot; name = &quot;resetBtn&quot; /&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
+</li>
+<li><p>30 form表单中的label标签 </p>
+<pre><code>label标签不会向用户呈现任何特殊效果,它的作用是为鼠标用户改进了可用性.如果你在label
+标签内点击文本,就会触发此控件.当用户点击label标签是,浏览器就会自动将焦点转到和标签
+相关的表单控件上.
+注意: 标签的for属性中的值应当与相关控件的id属性值相同(说白了,这就是一个绑定的过程,
+label关联了哪个元素,你点击label文字,哪个元素就会响应)
+语法: &lt; label for = &quot;控件id名称&quot;&gt;
+注意: 标签的for属性中的值应当与相关控件的id属性值相同
+</code></pre><blockquote>
+<p><strong>末语</strong>:<br>这些教材都是从慕课网上找到的,有的内容比较啰嗦的我直接删掉了,毕竟学技术没那么多时间看废话.下一篇奉上CSS语法部分.</p>
+</blockquote>
+</li>
+</ul>
 
       
 
@@ -228,17 +319,6 @@
     <div class="article-info article-info-index">
       
       
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
       
 
       
@@ -289,7 +369,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/" alt="微信分享二维码">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2017/08/30/web前端学习第一课,HTML语法/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -303,7 +383,7 @@
   
 <nav id="article-nav">
   
-    <a href="/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2017/08/30/css语法部分/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
@@ -313,8 +393,8 @@
     </a>
   
   
-    <a href="/2017/01/20/RxSwift文档翻译(上) /" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">RxSwift 文档翻译(上)</div>
+    <a href="/2017/08/30/基于tableView Delegate模式实现一个listView/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title"></div>
       <i class="icon-circle-right"></i>
     </a>
   

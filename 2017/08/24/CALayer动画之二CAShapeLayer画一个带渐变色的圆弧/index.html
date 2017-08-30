@@ -6,31 +6,21 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>填坑记,Swift集成WeexSDK | 一江春水</title>
+  <title>一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
-<meta name="keywords" content="Swift">
+  <meta name="description" content="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧  接上篇：上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。  CAShapeLayer和UIBezierPath画一条圆弧： 12//首先定义一个circlevar circle: CAShapeLayer! 123456789101112131415161718192021222324//设置path的内">
 <meta property="og:type" content="article">
-<meta property="og:title" content="填坑记,Swift集成WeexSDK">
-<meta property="og:url" content="http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/index.html">
+<meta property="og:title" content="一江春水">
+<meta property="og:url" content="http://yoursite.com/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
+<meta property="og:description" content="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧  接上篇：上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。  CAShapeLayer和UIBezierPath画一条圆弧： 12//首先定义一个circlevar circle: CAShapeLayer! 123456789101112131415161718192021222324//设置path的内">
 <meta property="og:locale" content="Chinese">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivx93i72fj313601iq3z.jpg">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivx9ptz8fj311o0fsn3w.jpg">
-<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tKfTcly1fivxa5zc5wj307805xq2v.jpg">
-<meta property="og:image" content="https://ws1.sinaimg.cn/large/006tKfTcly1fivxaxjrsjj30ly06owfj.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxbg9kf6j30je08mtac.jpg">
-<meta property="og:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivxc3kn38j308c07fjrf.jpg">
-<meta property="og:image" content="https://ws3.sinaimg.cn/large/006tKfTcly1fivxd1jjdlj30nm092wg4.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxdhqjgfj30dw03gaao.jpg">
-<meta property="og:image" content="https://ws2.sinaimg.cn/large/006tKfTcly1fivxeiwzvlj305i05eq34.jpg">
-<meta property="og:updated_time" content="2017-08-25T09:21:56.000Z">
+<meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1526313-7bb1d9cbcf0712bf.gif?imageMogr2/auto-orient/strip">
+<meta property="og:updated_time" content="2017-08-24T09:15:25.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="填坑记,Swift集成WeexSDK">
-<meta name="twitter:description" content="前言:最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)">
-<meta name="twitter:image" content="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg">
+<meta name="twitter:title" content="一江春水">
+<meta name="twitter:description" content="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧  接上篇：上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。  CAShapeLayer和UIBezierPath画一条圆弧： 12//首先定义一个circlevar circle: CAShapeLayer! 123456789101112131415161718192021222324//设置path的内">
+<meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1526313-7bb1d9cbcf0712bf.gif?imageMogr2/auto-orient/strip">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
   
@@ -154,41 +144,27 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-填坑记,Swift集成WeexSDK" class="article article-type-post " itemscope itemprop="blogPost">
+            <article id="post-CALayer动画之二CAShapeLayer画一个带渐变色的圆弧" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
-    
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      填坑记,Swift集成WeexSDK
-    </h1>
-  
-
-        
-        <a href="/2017/04/27/填坑记,Swift集成WeexSDK/" class="archive-article-date">
-  	<time datetime="2017-04-27T01:09:28.000Z" itemprop="datePublished">2017-04-27</time>
-  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
-      view <span id="busuanzi_value_page_pv"></span> times
-    </span>
-</a>
-<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
-</script>
-        
-      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <h4 id="前言"><a href="#前言" class="headerlink" title="前言:"></a><strong>前言:</strong></h4><p>最近在项目里集成了WeexSDK,Swift项目,不能完全按照官方给的OC例子来搞,中间遇到了一些挺疼的坑,拿出来给大家分享下,希望能够帮到那些和我一样遇到这些坑的萌新们(注意:真的只针对萌新,不喜勿喷,笔者玻璃心,你如果骂我,我肯定也会骂你)<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivqt7koosj308c08cjrg.jpg" alt=""><br><a id="more"></a><br>首先,别告诉我你没有看过<a href="https://open.taobao.com/doc2/detail?spm=a219a.7629140.0.0.tFddsV&amp;&amp;docType=1&amp;articleId=104829" target="_blank" rel="external">Weex iOS SDK 集成指南</a>(算了,不装逼了,没看过的去看看吧,你第一步要做的就是集成WeexSDK到你的项目里)如果第一步你完成的很丝滑,而且我也假装你看了Demo,完成了对”hello.js”的渲染,那我们很快就能进入正题,聊聊填坑的事儿了.<br>你如果已经看到<a href="https://weex.apache.org/cn/references/advanced/extend-to-ios.html" target="_blank" rel="external">iOS 扩展</a>的文档了,那么恭喜你,你已经迎来了第一个坑: <strong>自定义module</strong>,<img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivx93i72fj313601iq3z.jpg" alt=""><br>,这时候,兴奋的你赶紧跑到demo里面,去查看了这个宏,然后你点啊点,发现<img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivx9ptz8fj311o0fsn3w.jpg" alt=""><br>早已不写OC好多年的你表情肯定是这样的:</p>
-<p><img src="https://ws3.sinaimg.cn/large/006tKfTcly1fivxa5zc5wj307805xq2v.jpg" alt=""><br>别担心,阿里爸爸已经猜到了你会这样,所以他们建议你创建一个桥接文件把宏写进OC的类里,然后为这个OC类写一个Swift的扩展,在扩展里写你要传递给Weex的module方法<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>.具体的您往这儿看:<br>OC类WXEventModule的.h 实现<br><img src="https://ws1.sinaimg.cn/large/006tKfTcly1fivxaxjrsjj30ly06owfj.jpg" alt=""><br>OC类WXEventModule的.m 实现<br><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxbg9kf6j30je08mtac.jpg" alt=""><br>这时候,聪明可人的你可能发现了, “WeexTest-Swift.h”是个什么鬼?别担心,你只要把他改成”YouDemo-Swift.h”就行了.这个.h文件是系统自动生成的,用于在OC类里引用Swift实例,是一个隐形的文件,第一次引进来,只要编译一次就可以找到了.(其实<a href="https://github.com/weexteam/article/issues/55" target="_blank" rel="external">Swift In Weex</a>里面有说,但说的不够详细)<br><img src="https://ws4.sinaimg.cn/large/006tKfTcly1fivxc3kn38j308c07fjrf.jpg" alt=""></p>
-<p>然后在Swift类的扩展里这样:<br><img src="https://ws3.sinaimg.cn/large/006tKfTcly1fivxd1jjdlj30nm092wg4.jpg" alt=""><br>别忘了把你的module引入到桥接文件<br><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxdhqjgfj30dw03gaao.jpg" alt=""><br>最后,在AppDelegate里面注册一下你的module:</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="type">WXSDKEngine</span>.registerModule(<span class="string">"WXOpenpageModule"</span>, with: <span class="type">NSClassFromString</span>(<span class="string">"WXEventModule"</span>))</div></pre></td></tr></table></figure>
-<p>行了,自定义module的坑踩平了,放下键盘,拿起手机,打一盘王者农药压压惊吧!<br>接下来说一说Weex下载图片的坑,weexSDK 没有图片下载的能力，需要我们手动实现一个下载器WXImgLoaderDefaultImpl(英俊潇洒,懒癌晚期的我,直接克隆的演示Demo的下载器),细节没什么说的,你只要拖到你的项目里,然后在AppDelegate里注册一下就OK了</p>
-<pre><code class="Swift"><span class="type">WXSDKEngine</span>.registerHandler(<span class="type">WXImgLoaderDefaultImpl</span>(), with: <span class="type">NSProtocolFromString</span>(<span class="string">"WXImgLoaderProtocol"</span>))
-</code></pre>
-<p>####<strong>结束语:</strong><br>最后奉上我的一发Demo,<a href="https://github.com/15130886370/WeexTest" target="_blank" rel="external">传送门</a>,我觉得有必要介绍下这个Demo,我实现了一个扫描二维码功能,你可以用他扫描你们前端小伙伴部署到服务器的JSBundle链接,然后直接在控制器里拿到这个链接去渲染,这样开发测试起来还是很方便的嘛,如果帮到了你,也烦请您动动发财的小手,右上角点点star,毕竟做人最重要的是装逼嘛~~</p>
-<p><img src="https://ws2.sinaimg.cn/large/006tKfTcly1fivxeiwzvlj305i05eq34.jpg" alt=""></p>
-<p>踩坑持续中,不间断更新,欢迎评论交流~!</p>
+        <h1 id="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧"><a href="#CALayer动画之二CAShapeLayer画一个带渐变色的圆弧" class="headerlink" title="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧"></a>CALayer动画之二CAShapeLayer画一个带渐变色的圆弧</h1><p><img src="http://upload-images.jianshu.io/upload_images/1526313-7bb1d9cbcf0712bf.gif?imageMogr2/auto-orient/strip" alt="动效.gif"></p>
+<blockquote>
+<p>接上篇：<br>上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。</p>
+</blockquote>
+<p>CAShapeLayer和UIBezierPath画一条圆弧：</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//首先定义一个circle</span></div><div class="line"><span class="keyword">var</span> circle: <span class="type">CAShapeLayer</span>!</div></pre></td></tr></table></figure>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//设置path的内容</span></div><div class="line"><span class="keyword">let</span> startAngle: <span class="type">CGFloat</span> = .pi * <span class="number">0.25</span></div><div class="line"><span class="keyword">let</span> endAngle: <span class="type">CGFloat</span> = .pi * <span class="number">2</span></div><div class="line"><span class="keyword">let</span> centerX = <span class="keyword">self</span>.backCircle.width/<span class="number">2</span></div><div class="line"><span class="keyword">let</span> centerY = <span class="keyword">self</span>.backCircle.height/<span class="number">2</span></div><div class="line"><span class="keyword">let</span> center = <span class="type">CGPoint</span>(x: centerX,y: centerY)</div><div class="line"><span class="keyword">let</span> lineWidth: <span class="type">CGFloat</span> = <span class="number">16.0</span></div><div class="line"></div><div class="line">circle = <span class="type">CAShapeLayer</span>()</div><div class="line"></div><div class="line"><span class="comment">//绘制圆</span></div><div class="line"><span class="keyword">let</span> circlePath = <span class="type">UIBezierPath</span>.<span class="keyword">init</span>(arcCenter: center, radius: <span class="number">240</span>/<span class="number">2</span>, startAngle: startAngle, endAngle: endAngle, clockwise: <span class="literal">true</span>)</div><div class="line"></div><div class="line">circle.path = circlePath.cgPath</div><div class="line"><span class="comment">//中间透明</span></div><div class="line">circle.fillColor = <span class="type">UIColor</span>.clear.cgColor</div><div class="line"><span class="comment">//临时颜色，下面会用到渐变色来渲染圆环颜色</span></div><div class="line">circle.strokeColor = <span class="type">UIColor</span>.green.cgColor</div><div class="line"><span class="comment">//设置线宽</span></div><div class="line">circle.lineWidth = lineWidth</div><div class="line"><span class="comment">//设置圆环头部样式</span></div><div class="line">circle.lineCap = kCALineCapRound</div><div class="line"><span class="comment">//把自己定义的circle 添加到 背景圆环的layer上</span></div><div class="line">backCircle.layer.addSublayer(circle)</div></pre></td></tr></table></figure>
+<p>添加动画，设置CABasicAnimation的keyPath为“strokeEnd”。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> circleAnimation = <span class="type">CABasicAnimation</span>(keyPath: <span class="string">"strokeEnd"</span>)</div><div class="line">circleAnimation.duration = <span class="number">2</span></div><div class="line">circleAnimation.fromValue = <span class="number">0.0</span></div><div class="line">circleAnimation.toValue = <span class="number">1.0</span></div><div class="line"><span class="comment">//动画节奏，淡出</span></div><div class="line">circleAnimation.timingFunction = <span class="type">CAMediaTimingFunction</span>(name: kCAMediaTimingFunctionEaseOut)</div><div class="line"><span class="comment">//把动画添加到layer上</span></div><div class="line">circle.add(circleAnimation, forKey: <span class="literal">nil</span>)</div></pre></td></tr></table></figure>
+<p>  下面重点来了：</p>
+<ol>
+<li>之所以能实现圆环的渐变色，并不是我们可以直接在layer上添加一个圆环形状的渐变色,而是创建一个通用的正方形渐变色区域，用我们的circle 作为这个渐变区域的mask来截取一个圆环形状的渐变色区域。</li>
+<li>为了制造圆环的渐变色效果，只创建一块渐变区域，那是不够的，因为那样画出来的圆左右方向的圆弧颜色是对称的，那样就太丑了，不符合整体渐变的要求。所以，我把这个正方形渐变区域垂直切分成两块渐变区域，左右区域的颜色顺序相反，起始和结束位置也相反,就可以实现圆环渐变的效果了。</li>
+</ol>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//创建第一个gradientLayer</span></div><div class="line">    <span class="keyword">let</span> colors1 = [</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">49</span>, green: <span class="number">240</span>, blue: <span class="number">233</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">69</span>, green: <span class="number">240</span>, blue: <span class="number">210</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">143</span>, green: <span class="number">238</span>, blue: <span class="number">147</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">220</span>, green: <span class="number">237</span>, blue: <span class="number">92</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">253</span>, green: <span class="number">237</span>, blue: <span class="number">74</span>, alpha: <span class="number">1.0</span>).cgColor</div><div class="line">    ]</div><div class="line">    <span class="keyword">let</span> frame1 = <span class="type">CGRect</span>(x: <span class="number">0</span>, y: <span class="number">0</span>, width: backCircle.width/<span class="number">2</span>, height: backCircle.height)</div><div class="line">    <span class="keyword">let</span> gradientLayer1 = <span class="type">CAGradientLayer</span>()</div><div class="line">    gradientLayer1.startPoint = <span class="type">CGPoint</span>(x: <span class="number">0.5</span>,y: <span class="number">0</span>)</div><div class="line">    gradientLayer1.endPoint = <span class="type">CGPoint</span>(x: <span class="number">0.5</span>,y: <span class="number">1</span>)</div><div class="line">    gradientLayer1.frame = frame1</div><div class="line">    gradientLayer1.colors = colors1</div><div class="line"></div><div class="line">    <span class="comment">//创建第二个gradientLayer</span></div><div class="line">    <span class="keyword">let</span> colors2 = [</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">253</span>, green: <span class="number">237</span>, blue: <span class="number">74</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">224</span>, green: <span class="number">238</span>, blue: <span class="number">59</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">148</span>, green: <span class="number">238</span>, blue: <span class="number">146</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">49</span>, green: <span class="number">240</span>, blue: <span class="number">233</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        ]</div><div class="line">    <span class="keyword">let</span> frame2 = <span class="type">CGRect</span>(x: backCircle.width/<span class="number">2</span>, y: <span class="number">0</span>, width: backCircle.width/<span class="number">2</span>, height: backCircle.height)</div><div class="line"></div><div class="line">    <span class="keyword">let</span> gradientLayer2 = <span class="type">CAGradientLayer</span>()</div><div class="line">    gradientLayer2.startPoint = <span class="type">CGPoint</span>(x: <span class="number">0.5</span>,y: <span class="number">1</span>)</div><div class="line">    gradientLayer2.endPoint = <span class="type">CGPoint</span>(x: <span class="number">0.5</span>,y: <span class="number">0</span>)</div><div class="line">    gradientLayer2.frame = frame2</div><div class="line">    gradientLayer2.colors = colors2</div><div class="line"></div><div class="line">    <span class="comment">//用一个gradientLayer来承接这两个渐变区域</span></div><div class="line">    gradientLayer.addSublayer(gradientLayer1)</div><div class="line">    gradientLayer.addSublayer(gradientLayer2)</div><div class="line">    <span class="comment">//用circle的path形状来截取渐变区域</span></div><div class="line">    gradientLayer.mask = circle</div><div class="line"></div><div class="line">    backCircle.layer.addSublayer(gradientLayer)</div></pre></td></tr></table></figure>
+<p>好了，一个带有渐变色的圆环画好了。通过这两篇总结，感觉对于渐变色layer的理解更加深刻了。<a href="https://github.com/15130886370/TMgradientLayer" target="_blank" rel="external">代码地址</a></p>
 
       
 
@@ -228,17 +204,6 @@
     <div class="article-info article-info-index">
       
       
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
       
 
       
@@ -289,7 +254,7 @@
     <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
     <p>扫一扫，分享到微信</p>
     <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2017/04/27/填坑记,Swift集成WeexSDK/" alt="微信分享二维码">
+      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/" alt="微信分享二维码">
     </div>
 </div>
 
@@ -303,7 +268,7 @@
   
 <nav id="article-nav">
   
-    <a href="/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/" id="article-nav-newer" class="article-nav-link-wrap">
+    <a href="/2017/08/30/CALayer动画之一CAGradientLayer，让渐变色动起来/" id="article-nav-newer" class="article-nav-link-wrap">
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
@@ -313,8 +278,8 @@
     </a>
   
   
-    <a href="/2017/01/20/RxSwift文档翻译(上) /" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">RxSwift 文档翻译(上)</div>
+    <a href="/2017/04/27/填坑记,Swift集成WeexSDK/" id="article-nav-older" class="article-nav-link-wrap">
+      <div class="article-nav-title">填坑记,Swift集成WeexSDK</div>
       <i class="icon-circle-right"></i>
     </a>
   
