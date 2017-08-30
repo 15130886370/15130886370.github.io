@@ -6,23 +6,19 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>扒一扒Swift中的unowned和weak(上) | 一江春水</title>
+  <title>Archives | 一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="最近项目中踩到了Closure使用unowned和weak修饰self对象避免循环引用所带来的坑,之前不是太了解,Closure里面会用到self的地方,一般都是这样处理  1&amp;#123;[unowned self] in &amp;#125;">
-<meta name="keywords" content="Swift">
-<meta property="og:type" content="article">
-<meta property="og:title" content="扒一扒Swift中的unowned和weak(上)">
-<meta property="og:url" content="http://yoursite.com/2017/08/30/扒一扒swift中的unowned和weak上/index.html">
+  <meta name="description" content="毕业河北理工大学，就职于北京汤团科技有限公司，擅长Swift编程，热衷学习。">
+<meta name="keywords" content="iOS,Swift,RxSwift,html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="一江春水">
+<meta property="og:url" content="http://yoursite.com/archives/page/2/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="最近项目中踩到了Closure使用unowned和weak修饰self对象避免循环引用所带来的坑,之前不是太了解,Closure里面会用到self的地方,一般都是这样处理  1&amp;#123;[unowned self] in &amp;#125;">
+<meta property="og:description" content="毕业河北理工大学，就职于北京汤团科技有限公司，擅长Swift编程，热衷学习。">
 <meta property="og:locale" content="Chinese">
-<meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-sep-person-apt11@2x.jpg">
-<meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-reference-cycle@2x.jpg">
-<meta property="og:updated_time" content="2017-08-30T03:12:16.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="扒一扒Swift中的unowned和weak(上)">
-<meta name="twitter:description" content="最近项目中踩到了Closure使用unowned和weak修饰self对象避免循环引用所带来的坑,之前不是太了解,Closure里面会用到self的地方,一般都是这样处理  1&amp;#123;[unowned self] in &amp;#125;">
-<meta name="twitter:image" content="https://dn-boxueio.qbox.me/bo-reading-sep-person-apt11@2x.jpg">
+<meta name="twitter:title" content="一江春水">
+<meta name="twitter:description" content="毕业河北理工大学，就职于北京汤团科技有限公司，擅长Swift编程，热衷学习。">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
   
@@ -152,120 +148,41 @@
             <canvas data-colors="#eaeaea" data-sectionHeight="100" data-contentId="js-content" id="myCanvas1" class="anm-canvas"></canvas>
           </div>
           <div id="js-content" class="content-ll">
-            <article id="post-扒一扒swift中的unowned和weak上" class="article article-type-post " itemscope itemprop="blogPost">
-  <div class="article-inner">
+            
+  
+  
     
-      <header class="article-header">
-        
-  
-    <h1 class="article-title" itemprop="name">
-      扒一扒Swift中的unowned和weak(上)
-    </h1>
-  
-
-        
-        <a href="/2017/08/30/扒一扒swift中的unowned和weak上/" class="archive-article-date">
-  	<time datetime="2017-08-30T01:40:01.000Z" itemprop="datePublished">2017-08-30</time>
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/archives/2017" class="archive-year">2017</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2017/01/20/RxSwift 学习知识总结/" class="archive-article-date">
+  	<time datetime="2017-01-20T01:34:22.000Z" itemprop="datePublished">2017-01-20</time>
   	<span id="busuanzi_container_page_pv" style="color:DarkGray">
       view <span id="busuanzi_value_page_pv"></span> times
     </span>
 </a>
 <script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
 </script>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <blockquote>
-<p>最近项目中踩到了Closure使用unowned和weak修饰self对象避免循环引用所带来的坑,之前不是太了解,Closure里面会用到self的地方,一般都是这样处理</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;[unowned self] in &#125;</div></pre></td></tr></table></figure>
-<a id="more"></a>
-<blockquote>
-<p>但是在一个网络请求的Closure回调里面,这样写总是会令程序crash掉,后来发现在这个Closure执行之前,self已经被释放了,在我们老大查阅了许多资料后把代码改成这样就ok了</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&#123;[weak self] in </div><div class="line">  if let weSelf = self&#123;</div><div class="line">      执行代码</div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>最近跟着<a href="https://boxueio.com/category/swift" target="_blank" rel="external">泊学网</a>(<em>被誉为最良心的swift视频教学网站</em>)的Mars讲师学习了关于swift中Reference cycle引起的内存泄漏方面的知识,总结一下,留着学习!~<br>那么,一起来扒一扒swift中unwoned和weak之间的恩恩怨怨吧~</p>
-<p>首先,想要弄明白unwoned和weak的区别,就一定要先明白他们能做什么,所以,我们就从Reference cycle引起的内存泄露说起吧!<br>大家都知道,swift会使用ARC（Automatic Reference Counting）帮我们打理内存,但是在有些时候,尤其是对象间存在互相引用的时候,就会由于reference cycle导致内存无法释放,而我们也需要时刻保持清醒,来避免内存泄露。那么</p>
-<p>####ARC是如何工作的呢?<br>Swift使用“引用计数（reference count）”来管理类对象的生命周期，避免类对象在“仍被使用”的时候被意外释放。为了观察reference count、对象构建和对象释放之间的关系，我们先来定义一个类：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">class Person &#123; </div><div class="line">let name: String</div><div class="line">init(name: String) &#123; </div><div class="line">      self.name = name print(&quot;\(name) is being initialized.&quot;)</div><div class="line">   &#125;</div><div class="line"> deinit &#123; </div><div class="line">      print(&quot;\(name) is being deinitialized.&quot;) </div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>接下来，我们观察下面代码的的执行过程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">var ref1: Person?</div><div class="line">var ref2: Person?</div><div class="line">// Mars is being initialized.</div><div class="line">// count = 1</div><div class="line">ref1 = Person(name: &quot;Mars&quot;)</div><div class="line">// count = 2</div><div class="line">ref2 = ref1</div><div class="line">// count = 1</div><div class="line">ref2 = nil</div><div class="line">// count = 0</div><div class="line">// Mars is being deinitialized.</div><div class="line">ref1 = nil</div></pre></td></tr></table></figure></p>
-<ul>
-<li>Person构造时，init被调用，只有一个变量引用了这个对象，此时的reference count为1；</li>
-<li>当我们把ref1赋值给ref2时，它们指向相同的对象，此时的reference count为2；</li>
-<li>当ref2为nil时，此时的reference count恢复为1；</li>
-<li>当ref1为nil时，reference count为0，Tennat的deinit被调用，对象被释放；<br>在上面的例子里，由于ref1和ref2都会导致Person的reference count加1，因此它们叫做strong reference。这是Swift中的默认行为。</li>
-</ul>
-<blockquote>
-<p>注意: <em>“和带有Garbage Collection的语言不同，当一个对象的reference count为0时，Swift会立即删除该对象。”</em></p>
-</blockquote>
-<h4 id="那么Reference-cycle-循环引用-又是怎么发生的呢"><a href="#那么Reference-cycle-循环引用-又是怎么发生的呢" class="headerlink" title="那么Reference cycle(循环引用)又是怎么发生的呢?"></a>那么Reference cycle(循环引用)又是怎么发生的呢?</h4><p>对于Person这样的单个对象，ARC可以很好的默默为我们工作。但是，当不同类对象之间存在相互引用时<br>，指向彼此的strong reference就会导致reference cycle。ARC无法释放它们之中的任何一个。来看一个例子，我们给Person添加一个Apartment：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">class Person &#123;</div><div class="line"> let name: String </div><div class="line"> var apartment: Apartment?</div><div class="line"> init(name: String) &#123;</div><div class="line">     self.name = name print(&quot;\(name) is being initialized.&quot;)</div><div class="line"> &#125; </div><div class="line">deinit &#123; </div><div class="line">    print(&quot;\(name) is being deinitialized.&quot;) </div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">class Apartment &#123; </div><div class="line"> let unit: String</div><div class="line"> var tenant: Person?</div><div class="line"> init(unit: String) &#123; </div><div class="line">    self.unit = unit print(&quot;Apartment \(unit) is being initialized.&quot;)</div><div class="line"> &#125;</div><div class="line"> deinit &#123; </div><div class="line">    print(&quot;Apartment \(unit) is being deinitialized.&quot;) </div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>由于Person不一定会租Apartment(公寓)，Apartment(公寓)也不一定有房客，因此，Person.apartment和Apartment.tenant都是一个Optional，它们可以为nil。<br>接下来，我们分别创建一个Person和Apartment对象，然后把变量设置为nil，就可以看到Person和Apartment被构建和销毁了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">// Mars is being initialized</div><div class="line">// count = 1</div><div class="line">var mars: Person? = Person(name: &quot;Mars&quot;)</div><div class="line">// Apartment 11 is being initialized</div><div class="line">// count = 1</div><div class="line">var apt11: Apartment? = Apartment(unit: &quot;11&quot;)</div><div class="line">// count = 0</div><div class="line">// Mars is being deinitializedmars = nil</div><div class="line">// count = 0</div><div class="line">// apartment is being deinitializedapt11 = nil</div></pre></td></tr></table></figure></p>
-<p><img src="https://dn-boxueio.qbox.me/bo-reading-sep-person-apt11@2x.jpg" alt=""><br>接下来，如果我们让mars和apartment分别指向彼此：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">// ... Create mars and apartment</div><div class="line">// apartment.count = 2</div><div class="line">mars!.apartment = apt11</div><div class="line">// mars.count = 2</div><div class="line">apt11!.tenant = mars</div><div class="line">// ... Set mars and apartment to nil</div><div class="line">mars = nil</div><div class="line">apt11 = nil</div></pre></td></tr></table></figure></p>
-<p><img src="https://dn-boxueio.qbox.me/bo-reading-reference-cycle@2x.jpg" alt=""><br>这时，尽管我们把mars和apt11设置为nil，Person和Apartmetn的deinit也不会被调用了。因为它们的两个member（apartment和tenant）是一个strong reference，指向了彼此，让对象仍旧“存活”在内存里。但是，mars和apt11已经被设置成nil，我们也已经无能为力了。这就是类对象之间的reference cycle。</p>
-<h4 id="三种Reference-cycle的解决方案"><a href="#三种Reference-cycle的解决方案" class="headerlink" title="三种Reference cycle的解决方案"></a>三种Reference cycle的解决方案</h4><p><strong>1. class member允许为nil时 </strong><br>在我们之前的例子里，Apartment和Person中引起reference cycle的数据成员都允许为nil，对于这种情况，我们可以像下面这样使用weak reference来解决reference cycle：</p>
-<blockquote>
-<p>weak var name: <em>Type</em></p>
-</blockquote>
-<p>对于一个weak reference来说：</p>
-<ul>
-<li>当其指向类对象时，并不会添加类对象的引用计数；</li>
-<li>当其指向的类对象不存在时，ARC会自动把weak reference设置为nil；</li>
-</ul>
-<blockquote>
-<p>注意: <em> “由于weak reference的特定，它只能被定义成var。”</em></p>
-</blockquote>
-<p>了解了weak reference特性之后，我们可以把Apartment修改成这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">class Apartment &#123; </div><div class="line">  let unit: String</div><div class="line">  weak var tenant: Person? </div><div class="line">// omit for simplicity...</div><div class="line">&#125;</div><div class="line">var mars: Person? = Person(name: &quot;Mars&quot;)</div><div class="line">var apt11: Apartment? = Apartment(unit: &quot;11&quot;, owner: mars!)</div><div class="line">mars!.apartment = apt11</div><div class="line">apt11!.tenant = mars</div><div class="line">mars = nil</div><div class="line">apt11 = nil</div><div class="line">``` </div><div class="line">mars设置为nil的时候，Apartment和Person的关系就变成了这样：</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-mars-nil@2x.jpg)</div><div class="line">由于已经没有strong reference指向mars，于是mars就被ARC释放了。接下来，我们把apt11设置成nil：</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-apt11-nil@2x.jpg)</div><div class="line">这时，也没有任何strong reference指向apt11了，它也会被ARC释放。</div><div class="line">这就是当引起reference cycle的两个member允许为nil时，我们使用的解决方案。所以</div><div class="line"></div><div class="line">&gt;  weak reference用于解决成员允许为nil的reference cycle 。</div><div class="line"></div><div class="line">**2. 当有一个member不能为nil时**</div><div class="line">来看另外一个应用场景。我们把Person改成下面这样：</div></pre></td></tr></table></figure></p>
-<p>class Person {<br>  let name: String<br>  var apartment: Apartment?<br>  var property: Apartment? // omit for simplicity…<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">由于不是每个人名下都有房产，因此property允许为nil，我们把它定义为Apartment optional。接下来，把Apartment的代码改成这样：</div></pre></td></tr></table></figure></p>
-<p>class Apartment {<br>  let unit: String<br>  weak var tenant: Person?<br>  let owner: Person<br>  init(unit: String, owner: Person) {<br>  self.unit = unit<br>  self.owner = owner<br>  print(“Apartment (unit) is being initialized.”)<br> } // omit for simplicity…<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">由于每个Apartment一定会有房东，不能为nil，因此，我们把它定义为Person。</div><div class="line">接下来，当我们再次创建mars和apt11的时候：</div></pre></td></tr></table></figure></p>
-<p>var mars: Person? = Person(name: “Mars”)<br>var apt11: Apartment? = Apartment(unit: “11”, owner: mars!)<br>mars!.apartment = apt11<br>apt11!.tenant = mars<br>mars = nil<br>apt11 = nil<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-owner-ref-cycle@2x.jpg)</div><div class="line">在上面这个图里，即使我们把mars和apt11设置为nil：</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-owner-ref-cycle1@2x.jpg)</div><div class="line">owner这个strong reference会让mars存活，进而apartment会让apt11存活。这就形成了一个新的reference cycl。</div><div class="line">解决办法很简单,我们把owner设置为unowned就ok了!</div></pre></td></tr></table></figure></p>
-<p>class Apartment {<br>    let unit: String<br>    weak var tenant: Person?<br>    unowned let owner: Person // Omit for simplicity…<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">和strong reference相比，unowned reference只有一个特别：不会引起对象引用计数的变化。因此，当我们把mars和apt11设置为nil时，对象的关系就会变成这样:</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-owner-ref-cycle2@2x.jpg)</div><div class="line">此时，已经没有strong reference引用mars，它会先被ARC释放掉，之后，引用apt11的apartment也不存在了，apt11也会被ARC清除。这就是reference cycle中一方不能为nil时的解决方案。</div><div class="line"></div><div class="line">**3.当两个member都不允许为nil的时候**</div><div class="line">一个国家不可能没有首都，一个城市也不可能没有国家归属，因此，它们都只能是普通的类对象，而不能是一个Optional。接下来，我们来处理它们的初始化问题。首先，我们按照一般的方式处理City：</div></pre></td></tr></table></figure></p>
-<p>class City {<br>   let name: String<br>   let country: Country<br>   init(name: String, country: Country) {<br>   self.name = name<br>   self.country = country<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">然后，处理Country</div></pre></td></tr></table></figure></p>
-<p>class Country {<br>   let name: String<br>   var capital: City !<br>  init(name: String, capitalName: String) {<br>  self.name = name<br>  self.capital = City(name: capitalName, country: self)<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">我们分别定义一个变量：</div></pre></td></tr></table></figure></p>
-<p>var cn: Country? = Country(name: “China”, capitalName: “Beijing”)<br>var bj: City? = City(name: “Beijing”, country: cn!)<br>cn = nil<br>bj = nil<br>```<br>经历过之前的多个例子之后，我们很快就可以发现，当cn和bj为nil时，cn.captical和其内建的City仍旧会保持彼此“存活”在内存里，而解决这个问题的办法其实之前我们已经处理过了，把country定义为unowned就可以了。</p>
-<blockquote>
-<p><em>“unowned reference和implicitly unwrapped optional配合在一起，用于解决引起reference cycle的两个成员都不允许为nil的情况。”</em></p>
-</blockquote>
-<p>####上篇完</p>
-
-      
-
-      
-        <div class="page-reward">
-          <a href="javascript:;" class="page-reward-btn tooltip-top">
-            <div class="tooltip tooltip-east">
-            <span class="tooltip-item">
-              赏
-            </span>
-            <span class="tooltip-content">
-              <span class="tooltip-text">
-                <span class="tooltip-inner">
-                  <p class="reward-p"><i class="icon icon-quo-left"></i>谢谢<i class="icon icon-quo-right"></i></p>
-                  <div class="reward-box">
-                    
-                    <div class="reward-box-item">
-                      <img class="reward-img" src="https://ws2.sinaimg.cn/large/006tKfTcly1fivr53zvakj30go0p0aco.jpg">
-                      <span class="reward-type">支付宝</span>
-                    </div>
-                    
-                    
-                    <div class="reward-box-item">
-                      <img class="reward-img" src="https://ws2.sinaimg.cn/large/006tKfTcly1fivr5hn2ouj30q60zkq51.jpg">
-                      <span class="reward-type">微信</span>
-                    </div>
-                    
-                  </div>
-                </span>
-              </span>
-            </span>
-          </div>
-          </a>
         </div>
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
+    	 
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2017/01/20/RxSwift 学习知识总结/">RxSwift 学习知识总结</a>
+    </h1>
+  
+
+        <div class="article-info info-on-right">
+          
 	<div class="article-tag tagcloud">
 		<i class="icon-price-tags icon"></i>
 		<ul class="article-tag-list">
@@ -273,116 +190,77 @@
         		<li class="article-tag-list-item">
         			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
         		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">RxSwift</a>
+        		</li>
       		
 		</ul>
 	</div>
 
-      
+          
 
-      
-
-      
-        
-<div class="share-btn share-icons tooltip-left">
-  <div class="tooltip tooltip-east">
-    <span class="tooltip-item">
-      <a href="javascript:;" class="share-sns share-outer">
-        <i class="icon icon-share"></i>
-      </a>
-    </span>
-    <span class="tooltip-content">
-      <div class="share-wrap">
-        <div class="share-icons">
-          <a class="weibo share-sns" href="javascript:;" data-type="weibo">
-            <i class="icon icon-weibo"></i>
-          </a>
-          <a class="weixin share-sns wxFab" href="javascript:;" data-type="weixin">
-            <i class="icon icon-weixin"></i>
-          </a>
-          <a class="qq share-sns" href="javascript:;" data-type="qq">
-            <i class="icon icon-qq"></i>
-          </a>
-          <a class="douban share-sns" href="javascript:;" data-type="douban">
-            <i class="icon icon-douban"></i>
-          </a>
-          <a class="qzone share-sns" href="javascript:;" data-type="qzone">
-            <i class="icon icon-qzone"></i>
-          </a>
-          <a class="facebook share-sns" href="javascript:;" data-type="facebook">
-            <i class="icon icon-facebook"></i>
-          </a>
-          <a class="twitter share-sns" href="javascript:;" data-type="twitter">
-            <i class="icon icon-twitter"></i>
-          </a>
-          <a class="google share-sns" href="javascript:;" data-type="google">
-            <i class="icon icon-google"></i>
-          </a>
         </div>
-      </div>
-    </span>
-  </div>
-</div>
-
-<div class="page-modal wx-share js-wx-box">
-    <a class="close js-modal-close" href="javascript:;"><i class="icon icon-close"></i></a>
-    <p>扫一扫，分享到微信</p>
-    <div class="wx-qrcode">
-      <img src="http://s.jiathis.com/qrcode.php?url=http://yoursite.com/2017/08/30/扒一扒swift中的unowned和weak上/" alt="微信分享二维码">
-    </div>
-</div>
-
-<div class="mask js-mask"></div>
-      
-      <div class="clearfix"></div>
-    </div>
+        <div class="clearfix"></div>
+    </header>
   </div>
 </article>
-
   
-<nav id="article-nav">
-  
-    <a href="/2017/08/30/扒一扒swift中的unowned和weak下/" id="article-nav-newer" class="article-nav-link-wrap">
-      <i class="icon-circle-left"></i>
-      <div class="article-nav-title">
-        
-          (no title)
-        
-      </div>
-    </a>
-  
-  
-    <a href="/2017/08/30/css语法部分/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title">CSS部分</div>
-      <i class="icon-circle-right"></i>
-    </a>
-  
-</nav>
-
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
+    
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      	<div class="article-meta">
+	      	<a href="/2017/01/20/RxSwift文档翻译(下)/" class="archive-article-date">
+  	<time datetime="2017-01-20T01:32:39.000Z" itemprop="datePublished">2017-01-20</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
         </div>
-        
-        
-    </div>
-</aside>
-
-
-
+    	 
   
-  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/2017/01/20/RxSwift文档翻译(下)/">RxSwift 文档翻译(下)</a>
+    </h1>
   
 
+        <div class="article-info info-on-right">
+          
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">RxSwift</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+          
+
+        </div>
+        <div class="clearfix"></div>
+    </header>
+  </div>
+</article>
+  
+  
+    </div></section>
   
 
+    
+    <nav id="page-nav">
+      <a class="extend prev" rel="prev" href="/archives/">&laquo; Prev</a><a class="page-number" href="/archives/">1</a><span class="page-number current">2</span>
+    </nav>
   
 
 
@@ -406,8 +284,8 @@
 	var yiliaConfig = {
 		mathjax: false,
 		isHome: false,
-		isPost: true,
-		isArchive: false,
+		isPost: false,
+		isArchive: true,
 		isTag: false,
 		isCategory: false,
 		open_in_new: false,
