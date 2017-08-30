@@ -8,21 +8,21 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="title: 扒一扒Swift中的unowned和weak(下)tags: - Swift 上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法">
+  <meta name="description" content="title: 扒一扒Swift中的unowned和weak(下)tags:  - Swift 上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一江春水">
 <meta property="og:url" content="http://yoursite.com/2017/08/30/扒一扒swift中的unowned和weak下/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="title: 扒一扒Swift中的unowned和weak(下)tags: - Swift 上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法">
+<meta property="og:description" content="title: 扒一扒Swift中的unowned和weak(下)tags:  - Swift 上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法">
 <meta property="og:locale" content="Chinese">
 <meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-normal-deinit-h1@2x.jpg">
 <meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-abnormal-deinit-h1@2x.jpg">
 <meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-closure-ref-cycle@2x.jpg">
 <meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-closure-unowned-capture@2x.jpg">
-<meta property="og:updated_time" content="2017-08-30T02:46:34.000Z">
+<meta property="og:updated_time" content="2017-08-30T03:12:20.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一江春水">
-<meta name="twitter:description" content="title: 扒一扒Swift中的unowned和weak(下)tags: - Swift 上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法">
+<meta name="twitter:description" content="title: 扒一扒Swift中的unowned和weak(下)tags:  - Swift 上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法">
 <meta name="twitter:image" content="https://dn-boxueio.qbox.me/bo-reading-normal-deinit-h1@2x.jpg">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
@@ -153,7 +153,7 @@
     <div class="article-entry" itemprop="articleBody">
       
         <hr>
-<p>title: 扒一扒Swift中的unowned和weak(下)<br>tags:</p>
+<p>title: 扒一扒Swift中的unowned和weak(下)<br>tags: </p>
 <h2 id="Swift"><a href="#Swift" class="headerlink" title="- Swift"></a>- Swift</h2><blockquote>
 <p>上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法</p>
 </blockquote>
