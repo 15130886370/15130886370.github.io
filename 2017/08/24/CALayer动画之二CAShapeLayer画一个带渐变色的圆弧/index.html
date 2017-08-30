@@ -6,20 +6,21 @@
   <meta name="renderer" content="webkit">
   <meta http-equiv="X-UA-Compatible" content="IE=edge" >
   <link rel="dns-prefetch" href="http://yoursite.com">
-  <title>一江春水</title>
+  <title>CALayer动画之二CAShapeLayer画一个带渐变色的圆弧 | 一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧  接上篇：上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。  CAShapeLayer和UIBezierPath画一条圆弧： 12//首先定义一个circlevar circle: CAShapeLayer! 123456789101112131415161718192021222324//设置path的内">
+  <meta name="description" content="接上篇：上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。">
+<meta name="keywords" content="Swift">
 <meta property="og:type" content="article">
-<meta property="og:title" content="一江春水">
+<meta property="og:title" content="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧">
 <meta property="og:url" content="http://yoursite.com/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧  接上篇：上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。  CAShapeLayer和UIBezierPath画一条圆弧： 12//首先定义一个circlevar circle: CAShapeLayer! 123456789101112131415161718192021222324//设置path的内">
+<meta property="og:description" content="接上篇：上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。">
 <meta property="og:locale" content="Chinese">
 <meta property="og:image" content="http://upload-images.jianshu.io/upload_images/1526313-7bb1d9cbcf0712bf.gif?imageMogr2/auto-orient/strip">
-<meta property="og:updated_time" content="2017-08-24T09:15:25.000Z">
+<meta property="og:updated_time" content="2017-08-30T02:47:36.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="一江春水">
-<meta name="twitter:description" content="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧  接上篇：上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。  CAShapeLayer和UIBezierPath画一条圆弧： 12//首先定义一个circlevar circle: CAShapeLayer! 123456789101112131415161718192021222324//设置path的内">
+<meta name="twitter:title" content="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧">
+<meta name="twitter:description" content="接上篇：上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。">
 <meta name="twitter:image" content="http://upload-images.jianshu.io/upload_images/1526313-7bb1d9cbcf0712bf.gif?imageMogr2/auto-orient/strip">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
@@ -147,13 +148,32 @@
             <article id="post-CALayer动画之二CAShapeLayer画一个带渐变色的圆弧" class="article article-type-post " itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      CALayer动画之二CAShapeLayer画一个带渐变色的圆弧
+    </h1>
+  
+
+        
+        <a href="/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/" class="archive-article-date">
+  	<time datetime="2017-08-24T09:14:40.000Z" itemprop="datePublished">2017-08-24</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧"><a href="#CALayer动画之二CAShapeLayer画一个带渐变色的圆弧" class="headerlink" title="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧"></a>CALayer动画之二CAShapeLayer画一个带渐变色的圆弧</h1><p><img src="http://upload-images.jianshu.io/upload_images/1526313-7bb1d9cbcf0712bf.gif?imageMogr2/auto-orient/strip" alt="动效.gif"></p>
+        <p><img src="http://upload-images.jianshu.io/upload_images/1526313-7bb1d9cbcf0712bf.gif?imageMogr2/auto-orient/strip" alt="动效.gif"></p>
 <blockquote>
-<p>接上篇：<br>上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。</p>
+<p>接上篇：<br>上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。<br><a id="more"></a><br>CAShapeLayer和UIBezierPath画一条圆弧：</p>
 </blockquote>
-<p>CAShapeLayer和UIBezierPath画一条圆弧：</p>
 <figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//首先定义一个circle</span></div><div class="line"><span class="keyword">var</span> circle: <span class="type">CAShapeLayer</span>!</div></pre></td></tr></table></figure>
 <figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//设置path的内容</span></div><div class="line"><span class="keyword">let</span> startAngle: <span class="type">CGFloat</span> = .pi * <span class="number">0.25</span></div><div class="line"><span class="keyword">let</span> endAngle: <span class="type">CGFloat</span> = .pi * <span class="number">2</span></div><div class="line"><span class="keyword">let</span> centerX = <span class="keyword">self</span>.backCircle.width/<span class="number">2</span></div><div class="line"><span class="keyword">let</span> centerY = <span class="keyword">self</span>.backCircle.height/<span class="number">2</span></div><div class="line"><span class="keyword">let</span> center = <span class="type">CGPoint</span>(x: centerX,y: centerY)</div><div class="line"><span class="keyword">let</span> lineWidth: <span class="type">CGFloat</span> = <span class="number">16.0</span></div><div class="line"></div><div class="line">circle = <span class="type">CAShapeLayer</span>()</div><div class="line"></div><div class="line"><span class="comment">//绘制圆</span></div><div class="line"><span class="keyword">let</span> circlePath = <span class="type">UIBezierPath</span>.<span class="keyword">init</span>(arcCenter: center, radius: <span class="number">240</span>/<span class="number">2</span>, startAngle: startAngle, endAngle: endAngle, clockwise: <span class="literal">true</span>)</div><div class="line"></div><div class="line">circle.path = circlePath.cgPath</div><div class="line"><span class="comment">//中间透明</span></div><div class="line">circle.fillColor = <span class="type">UIColor</span>.clear.cgColor</div><div class="line"><span class="comment">//临时颜色，下面会用到渐变色来渲染圆环颜色</span></div><div class="line">circle.strokeColor = <span class="type">UIColor</span>.green.cgColor</div><div class="line"><span class="comment">//设置线宽</span></div><div class="line">circle.lineWidth = lineWidth</div><div class="line"><span class="comment">//设置圆环头部样式</span></div><div class="line">circle.lineCap = kCALineCapRound</div><div class="line"><span class="comment">//把自己定义的circle 添加到 背景圆环的layer上</span></div><div class="line">backCircle.layer.addSublayer(circle)</div></pre></td></tr></table></figure>
 <p>添加动画，设置CABasicAnimation的keyPath为“strokeEnd”。</p>
@@ -204,6 +224,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -272,7 +303,7 @@
       <i class="icon-circle-left"></i>
       <div class="article-nav-title">
         
-          (no title)
+          CALayer动画之一CAGradientLayer，让渐变色动起来
         
       </div>
     </a>
@@ -408,6 +439,14 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">RxSwift</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">HTML</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CSS</a>
               </li>
             
             <div class="clearfix"></div>

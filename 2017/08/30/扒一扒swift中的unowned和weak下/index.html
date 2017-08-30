@@ -8,21 +8,21 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="#   上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法  先看个例子123456789101112class HTMLElment &amp;#123;    let name: String     let text: String?     var as">
+  <meta name="description" content="title: 扒一扒Swift中的unowned和weak(下)tags: - Swift 上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法">
 <meta property="og:type" content="article">
 <meta property="og:title" content="一江春水">
 <meta property="og:url" content="http://yoursite.com/2017/08/30/扒一扒swift中的unowned和weak下/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="#   上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法  先看个例子123456789101112class HTMLElment &amp;#123;    let name: String     let text: String?     var as">
+<meta property="og:description" content="title: 扒一扒Swift中的unowned和weak(下)tags: - Swift 上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法">
 <meta property="og:locale" content="Chinese">
 <meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-normal-deinit-h1@2x.jpg">
 <meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-abnormal-deinit-h1@2x.jpg">
 <meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-closure-ref-cycle@2x.jpg">
 <meta property="og:image" content="https://dn-boxueio.qbox.me/bo-reading-closure-unowned-capture@2x.jpg">
-<meta property="og:updated_time" content="2017-08-30T01:41:05.000Z">
+<meta property="og:updated_time" content="2017-08-30T02:46:34.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="一江春水">
-<meta name="twitter:description" content="#   上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法  先看个例子123456789101112class HTMLElment &amp;#123;    let name: String     let text: String?     var as">
+<meta name="twitter:description" content="title: 扒一扒Swift中的unowned和weak(下)tags: - Swift 上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法">
 <meta name="twitter:image" content="https://dn-boxueio.qbox.me/bo-reading-normal-deinit-h1@2x.jpg">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
@@ -152,10 +152,12 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p># </p>
-<blockquote>
+        <hr>
+<p>title: 扒一扒Swift中的unowned和weak(下)<br>tags:</p>
+<h2 id="Swift"><a href="#Swift" class="headerlink" title="- Swift"></a>- Swift</h2><blockquote>
 <p>上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法</p>
 </blockquote>
+<a id="more"></a>
 <p>先看个例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">class HTMLElment &#123;</div><div class="line">    let name: String </div><div class="line">    let text: String? </div><div class="line">    var asHTML: Void -&gt; String = &#123; </div><div class="line">    // WRONG SYNTAX!!!</div><div class="line">    if let text = self.text &#123; </div><div class="line">        return &quot;&lt;\(self.name)&gt;\(self.text)&quot;</div><div class="line">    &#125; else &#123;</div><div class="line">       return &quot;&lt;\(self.name)&gt;&quot; </div><div class="line">    &#125;</div><div class="line"> &#125; // Omit for simplicity...</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
 <blockquote>
 <p>注: <em>lazy可以确保一个成员只能在类对象在完整初始化过以后,才能使用</em></p>
@@ -281,7 +283,7 @@
   
   
     <a href="/2017/08/30/扒一扒swift中的unowned和weak上/" id="article-nav-older" class="article-nav-link-wrap">
-      <div class="article-nav-title"></div>
+      <div class="article-nav-title">扒一扒Swift中的unowned和weak(上)</div>
       <i class="icon-circle-right"></i>
     </a>
   
@@ -410,6 +412,14 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">RxSwift</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">HTML</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CSS</a>
               </li>
             
             <div class="clearfix"></div>

@@ -148,31 +148,14 @@
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p># </p>
-<blockquote>
+        <hr>
+<p>title: 扒一扒Swift中的unowned和weak(下)<br>tags:</p>
+<h2 id="Swift"><a href="#Swift" class="headerlink" title="- Swift"></a>- Swift</h2><blockquote>
 <p>上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法</p>
 </blockquote>
-<p>先看个例子<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">class HTMLElment &#123;</div><div class="line">    let name: String </div><div class="line">    let text: String? </div><div class="line">    var asHTML: Void -&gt; String = &#123; </div><div class="line">    // WRONG SYNTAX!!!</div><div class="line">    if let text = self.text &#123; </div><div class="line">        return &quot;&lt;\(self.name)&gt;\(self.text)&quot;</div><div class="line">    &#125; else &#123;</div><div class="line">       return &quot;&lt;\(self.name)&gt;&quot; </div><div class="line">    &#125;</div><div class="line"> &#125; // Omit for simplicity...</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<blockquote>
-<p>注: <em>lazy可以确保一个成员只能在类对象在完整初始化过以后,才能使用</em></p>
-</blockquote>
-<p>定义了asHTML之后，我们就可以观察h1的构建和释放过程了。首先，我们看使用asHTML之前：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">var h1: HTMLElment? = HTMLElment(name: &quot;h1&quot;, text: &quot;Title&quot;)h1 = nil</div></pre></td></tr></table></figure></p>
-<p>在Playground结果里，我们可以看到h1先被创建，而后被销毁的过程（因为HTMLElement的deinit方法被调用了）。<br><img src="https://dn-boxueio.qbox.me/bo-reading-normal-deinit-h1@2x.jpg" alt=""><br>而当我们在让h1等于nil前，使用asHTML的话，情况就不同了：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">var h1: HTMLElment? = HTMLElment(name: &quot;h1&quot;, text: &quot;Title&quot;)</div><div class="line">h1.asHTML</div><div class="line">h1 = nil</div></pre></td></tr></table></figure></p>
-<p>这时我们就发现，HTMLElement的deinit不再被调用了。<br><img src="https://dn-boxueio.qbox.me/bo-reading-abnormal-deinit-h1@2x.jpg" alt=""><br>根据之前说过的,我们推断,一定是某处发生了循环引用了。<br><img src="https://dn-boxueio.qbox.me/bo-reading-closure-ref-cycle@2x.jpg" alt=""><br>h1是我们定义的strong reference。Closure作为一个引用类型，它有自己的对象，因此asHTML也是一个strong reference。由于asHTML“捕获”了HTMLElement的self，因此HTMLElement的引用计数是2。当h1为nil时，asHTML对closure的引用和closure对self的“捕获”就形成了一个reference cycle。</p>
-<blockquote>
-<p>注: <em>尽管在closure内部，使用了多次self，closure对self的捕获仅发生1次（引用计数只加1）。</em></p>
-</blockquote>
-<h4 id="Closure中发生reference-cycle的解决办法"><a href="#Closure中发生reference-cycle的解决办法" class="headerlink" title="Closure中发生reference cycle的解决办法:"></a>Closure中发生reference cycle的解决办法:</h4><p>本质上来说，closure作为一个引用类型，解决reference cycle的方式和解决类对象之间的reference cycle是一样的，如果引起reference cycle的”捕获”不能为nil，就把它定义为unowned，否则，定义为weak。而指定“捕获”方式的地方，叫做closure的capture list。<br>我们把asHTML修改成下面这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">class HTMLElment &#123;</div><div class="line">   let name: String </div><div class="line">   let text: String? </div><div class="line">   lazy var asHTML: Void -&gt; String = &#123; </div><div class="line">   // text</div><div class="line">   // Capture list </div><div class="line">   [unowned self] in</div><div class="line">   if let text = self.text &#123; </div><div class="line">       return &quot;&lt;\(self.name)&gt;\(self.text)&quot;</div><div class="line">   &#125; else &#123;</div><div class="line">   return &quot;&lt;\(self.name)&gt;&quot; </div><div class="line">   &#125;</div><div class="line">  &#125;</div><div class="line"> ｝</div></pre></td></tr></table></figure></p>
-<p>我们使用一对 [] 表示closure的capture list，由于“捕获”到的self不能为nil（否则closure也不存在了），因此我们把它定义为unowned self。在我们这样做之后，当h1为nil时，对象之间的关系就变成了这样：<br><img src="https://dn-boxueio.qbox.me/bo-reading-closure-unowned-capture@2x.jpg" alt=""><br>由于HTMLElement没有了strong reference，因此它会被ARC释放掉，进而asHTML引用的closure也会变成“孤魂野鬼”，ARC当然也不会放过它。因此，closure和类对象间的循环引用问题就解决了。</p>
-<ul>
-<li><strong>如果closure带有完整的类型描述，capture list必须写在参数列表前面:</strong></li>
-<li><strong> 如果我们要在capture list里添加多个成员，用逗号把它们分隔开,例如:</strong><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">class HTMLElment &#123;</div><div class="line">   let name: String</div><div class="line">   let text: String? </div><div class="line">   lazy var asHTML: Void -&gt; String = &#123; </div><div class="line">   // Capture list</div><div class="line">   [unowned self /*, other capture member*/] () -&gt; String in</div><div class="line">   if let text = self.text &#123; </div><div class="line">     return &quot;&lt;\(self.name)&gt;\(self.text)&quot; </div><div class="line">   &#125; else &#123;</div><div class="line">     return &quot;&lt;\(self.name)&gt;&quot; </div><div class="line">   &#125;</div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<blockquote>
-<p>在利用Capture list解决了Closure中循环引用的问题以后,还要注意一点: 如果在某个Clusure中捕获到到self可以为nil,那我们就要回到上一篇开头所讲的那样,判断一下self,然后再进行处理了<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&#123;[weak self] in </div><div class="line">    if let weSelf = self&#123; 执行代码&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-</blockquote>
-<h4 id="好了-以上就是我总结的所有关于swfit中Reference-cycle-的知识了"><a href="#好了-以上就是我总结的所有关于swfit中Reference-cycle-的知识了" class="headerlink" title="好了,以上就是我总结的所有关于swfit中Reference cycle 的知识了!~"></a>好了,以上就是我总结的所有关于swfit中Reference cycle 的知识了!~</h4>
+        
+          <a class="article-more-a" href="/2017/08/30/扒一扒swift中的unowned和weak下/#more">more >></a>
+        
       
 
       
@@ -217,59 +200,35 @@
     <article id="post-扒一扒swift中的unowned和weak上" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/30/扒一扒swift中的unowned和weak上/">扒一扒Swift中的unowned和weak(上)</a>
+    </h1>
+  
+
+        
+        <a href="/2017/08/30/扒一扒swift中的unowned和weak上/" class="archive-article-date">
+  	<time datetime="2017-08-30T01:40:01.000Z" itemprop="datePublished">2017-08-30</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <p># </p>
-<blockquote>
+        <blockquote>
 <p>最近项目中踩到了Closure使用unowned和weak修饰self对象避免循环引用所带来的坑,之前不是太了解,Closure里面会用到self的地方,一般都是这样处理</p>
 </blockquote>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;[unowned self] in &#125;</div></pre></td></tr></table></figure>
-<blockquote>
-<p>但是在一个网络请求的Closure回调里面,这样写总是会令程序crash掉,后来发现在这个Closure执行之前,self已经被释放了,在我们老大查阅了许多资料后把代码改成这样就ok了</p>
-</blockquote>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&#123;[weak self] in </div><div class="line">  if let weSelf = self&#123;</div><div class="line">      执行代码</div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>最近跟着<a href="https://boxueio.com/category/swift" target="_blank" rel="external">泊学网</a>(<em>被誉为最良心的swift视频教学网站</em>)的Mars讲师学习了关于swift中Reference cycle引起的内存泄漏方面的知识,总结一下,留着学习!~<br>那么,一起来扒一扒swift中unwoned和weak之间的恩恩怨怨吧~</p>
-<p>首先,想要弄明白unwoned和weak的区别,就一定要先明白他们能做什么,所以,我们就从Reference cycle引起的内存泄露说起吧!<br>大家都知道,swift会使用ARC（Automatic Reference Counting）帮我们打理内存,但是在有些时候,尤其是对象间存在互相引用的时候,就会由于reference cycle导致内存无法释放,而我们也需要时刻保持清醒,来避免内存泄露。那么</p>
-<p>####ARC是如何工作的呢?<br>Swift使用“引用计数（reference count）”来管理类对象的生命周期，避免类对象在“仍被使用”的时候被意外释放。为了观察reference count、对象构建和对象释放之间的关系，我们先来定义一个类：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">class Person &#123; </div><div class="line">let name: String</div><div class="line">init(name: String) &#123; </div><div class="line">      self.name = name print(&quot;\(name) is being initialized.&quot;)</div><div class="line">   &#125;</div><div class="line"> deinit &#123; </div><div class="line">      print(&quot;\(name) is being deinitialized.&quot;) </div><div class="line">   &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>接下来，我们观察下面代码的的执行过程：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">var ref1: Person?</div><div class="line">var ref2: Person?</div><div class="line">// Mars is being initialized.</div><div class="line">// count = 1</div><div class="line">ref1 = Person(name: &quot;Mars&quot;)</div><div class="line">// count = 2</div><div class="line">ref2 = ref1</div><div class="line">// count = 1</div><div class="line">ref2 = nil</div><div class="line">// count = 0</div><div class="line">// Mars is being deinitialized.</div><div class="line">ref1 = nil</div></pre></td></tr></table></figure></p>
-<ul>
-<li>Person构造时，init被调用，只有一个变量引用了这个对象，此时的reference count为1；</li>
-<li>当我们把ref1赋值给ref2时，它们指向相同的对象，此时的reference count为2；</li>
-<li>当ref2为nil时，此时的reference count恢复为1；</li>
-<li>当ref1为nil时，reference count为0，Tennat的deinit被调用，对象被释放；<br>在上面的例子里，由于ref1和ref2都会导致Person的reference count加1，因此它们叫做strong reference。这是Swift中的默认行为。</li>
-</ul>
-<blockquote>
-<p>注意: <em>“和带有Garbage Collection的语言不同，当一个对象的reference count为0时，Swift会立即删除该对象。”</em></p>
-</blockquote>
-<h4 id="那么Reference-cycle-循环引用-又是怎么发生的呢"><a href="#那么Reference-cycle-循环引用-又是怎么发生的呢" class="headerlink" title="那么Reference cycle(循环引用)又是怎么发生的呢?"></a>那么Reference cycle(循环引用)又是怎么发生的呢?</h4><p>对于Person这样的单个对象，ARC可以很好的默默为我们工作。但是，当不同类对象之间存在相互引用时<br>，指向彼此的strong reference就会导致reference cycle。ARC无法释放它们之中的任何一个。来看一个例子，我们给Person添加一个Apartment：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div></pre></td><td class="code"><pre><div class="line">class Person &#123;</div><div class="line"> let name: String </div><div class="line"> var apartment: Apartment?</div><div class="line"> init(name: String) &#123;</div><div class="line">     self.name = name print(&quot;\(name) is being initialized.&quot;)</div><div class="line"> &#125; </div><div class="line">deinit &#123; </div><div class="line">    print(&quot;\(name) is being deinitialized.&quot;) </div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line"></div><div class="line">class Apartment &#123; </div><div class="line"> let unit: String</div><div class="line"> var tenant: Person?</div><div class="line"> init(unit: String) &#123; </div><div class="line">    self.unit = unit print(&quot;Apartment \(unit) is being initialized.&quot;)</div><div class="line"> &#125;</div><div class="line"> deinit &#123; </div><div class="line">    print(&quot;Apartment \(unit) is being deinitialized.&quot;) </div><div class="line">  &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>由于Person不一定会租Apartment(公寓)，Apartment(公寓)也不一定有房客，因此，Person.apartment和Apartment.tenant都是一个Optional，它们可以为nil。<br>接下来，我们分别创建一个Person和Apartment对象，然后把变量设置为nil，就可以看到Person和Apartment被构建和销毁了。<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">// Mars is being initialized</div><div class="line">// count = 1</div><div class="line">var mars: Person? = Person(name: &quot;Mars&quot;)</div><div class="line">// Apartment 11 is being initialized</div><div class="line">// count = 1</div><div class="line">var apt11: Apartment? = Apartment(unit: &quot;11&quot;)</div><div class="line">// count = 0</div><div class="line">// Mars is being deinitializedmars = nil</div><div class="line">// count = 0</div><div class="line">// apartment is being deinitializedapt11 = nil</div></pre></td></tr></table></figure></p>
-<p><img src="https://dn-boxueio.qbox.me/bo-reading-sep-person-apt11@2x.jpg" alt=""><br>接下来，如果我们让mars和apartment分别指向彼此：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">// ... Create mars and apartment</div><div class="line">// apartment.count = 2</div><div class="line">mars!.apartment = apt11</div><div class="line">// mars.count = 2</div><div class="line">apt11!.tenant = mars</div><div class="line">// ... Set mars and apartment to nil</div><div class="line">mars = nil</div><div class="line">apt11 = nil</div></pre></td></tr></table></figure></p>
-<p><img src="https://dn-boxueio.qbox.me/bo-reading-reference-cycle@2x.jpg" alt=""><br>这时，尽管我们把mars和apt11设置为nil，Person和Apartmetn的deinit也不会被调用了。因为它们的两个member（apartment和tenant）是一个strong reference，指向了彼此，让对象仍旧“存活”在内存里。但是，mars和apt11已经被设置成nil，我们也已经无能为力了。这就是类对象之间的reference cycle。</p>
-<h4 id="三种Reference-cycle的解决方案"><a href="#三种Reference-cycle的解决方案" class="headerlink" title="三种Reference cycle的解决方案"></a>三种Reference cycle的解决方案</h4><p><strong>1. class member允许为nil时 </strong><br>在我们之前的例子里，Apartment和Person中引起reference cycle的数据成员都允许为nil，对于这种情况，我们可以像下面这样使用weak reference来解决reference cycle：</p>
-<blockquote>
-<p>weak var name: <em>Type</em></p>
-</blockquote>
-<p>对于一个weak reference来说：</p>
-<ul>
-<li>当其指向类对象时，并不会添加类对象的引用计数；</li>
-<li>当其指向的类对象不存在时，ARC会自动把weak reference设置为nil；</li>
-</ul>
-<blockquote>
-<p>注意: <em> “由于weak reference的特定，它只能被定义成var。”</em></p>
-</blockquote>
-<p>了解了weak reference特性之后，我们可以把Apartment修改成这样：<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">class Apartment &#123; </div><div class="line">  let unit: String</div><div class="line">  weak var tenant: Person? </div><div class="line">// omit for simplicity...</div><div class="line">&#125;</div><div class="line">var mars: Person? = Person(name: &quot;Mars&quot;)</div><div class="line">var apt11: Apartment? = Apartment(unit: &quot;11&quot;, owner: mars!)</div><div class="line">mars!.apartment = apt11</div><div class="line">apt11!.tenant = mars</div><div class="line">mars = nil</div><div class="line">apt11 = nil</div><div class="line">``` </div><div class="line">mars设置为nil的时候，Apartment和Person的关系就变成了这样：</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-mars-nil@2x.jpg)</div><div class="line">由于已经没有strong reference指向mars，于是mars就被ARC释放了。接下来，我们把apt11设置成nil：</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-apt11-nil@2x.jpg)</div><div class="line">这时，也没有任何strong reference指向apt11了，它也会被ARC释放。</div><div class="line">这就是当引起reference cycle的两个member允许为nil时，我们使用的解决方案。所以</div><div class="line"></div><div class="line">&gt;  weak reference用于解决成员允许为nil的reference cycle 。</div><div class="line"></div><div class="line">**2. 当有一个member不能为nil时**</div><div class="line">来看另外一个应用场景。我们把Person改成下面这样：</div></pre></td></tr></table></figure></p>
-<p>class Person {<br>  let name: String<br>  var apartment: Apartment?<br>  var property: Apartment? // omit for simplicity…<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">由于不是每个人名下都有房产，因此property允许为nil，我们把它定义为Apartment optional。接下来，把Apartment的代码改成这样：</div></pre></td></tr></table></figure></p>
-<p>class Apartment {<br>  let unit: String<br>  weak var tenant: Person?<br>  let owner: Person<br>  init(unit: String, owner: Person) {<br>  self.unit = unit<br>  self.owner = owner<br>  print(“Apartment (unit) is being initialized.”)<br> } // omit for simplicity…<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">由于每个Apartment一定会有房东，不能为nil，因此，我们把它定义为Person。</div><div class="line">接下来，当我们再次创建mars和apt11的时候：</div></pre></td></tr></table></figure></p>
-<p>var mars: Person? = Person(name: “Mars”)<br>var apt11: Apartment? = Apartment(unit: “11”, owner: mars!)<br>mars!.apartment = apt11<br>apt11!.tenant = mars<br>mars = nil<br>apt11 = nil<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-owner-ref-cycle@2x.jpg)</div><div class="line">在上面这个图里，即使我们把mars和apt11设置为nil：</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-owner-ref-cycle1@2x.jpg)</div><div class="line">owner这个strong reference会让mars存活，进而apartment会让apt11存活。这就形成了一个新的reference cycl。</div><div class="line">解决办法很简单,我们把owner设置为unowned就ok了!</div></pre></td></tr></table></figure></p>
-<p>class Apartment {<br>    let unit: String<br>    weak var tenant: Person?<br>    unowned let owner: Person // Omit for simplicity…<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">和strong reference相比，unowned reference只有一个特别：不会引起对象引用计数的变化。因此，当我们把mars和apt11设置为nil时，对象的关系就会变成这样:</div><div class="line">![](https://dn-boxueio.qbox.me/bo-reading-owner-ref-cycle2@2x.jpg)</div><div class="line">此时，已经没有strong reference引用mars，它会先被ARC释放掉，之后，引用apt11的apartment也不存在了，apt11也会被ARC清除。这就是reference cycle中一方不能为nil时的解决方案。</div><div class="line"></div><div class="line">**3.当两个member都不允许为nil的时候**</div><div class="line">一个国家不可能没有首都，一个城市也不可能没有国家归属，因此，它们都只能是普通的类对象，而不能是一个Optional。接下来，我们来处理它们的初始化问题。首先，我们按照一般的方式处理City：</div></pre></td></tr></table></figure></p>
-<p>class City {<br>   let name: String<br>   let country: Country<br>   init(name: String, country: Country) {<br>   self.name = name<br>   self.country = country<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">然后，处理Country</div></pre></td></tr></table></figure></p>
-<p>class Country {<br>   let name: String<br>   var capital: City !<br>  init(name: String, capitalName: String) {<br>  self.name = name<br>  self.capital = City(name: capitalName, country: self)<br>  }<br>}<br><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">我们分别定义一个变量：</div></pre></td></tr></table></figure></p>
-<p>var cn: Country? = Country(name: “China”, capitalName: “Beijing”)<br>var bj: City? = City(name: “Beijing”, country: cn!)<br>cn = nil<br>bj = nil<br>```<br>经历过之前的多个例子之后，我们很快就可以发现，当cn和bj为nil时，cn.captical和其内建的City仍旧会保持彼此“存活”在内存里，而解决这个问题的办法其实之前我们已经处理过了，把country定义为unowned就可以了。</p>
-<blockquote>
-<p><em>“unowned reference和implicitly unwrapped optional配合在一起，用于解决引起reference cycle的两个成员都不允许为nil的情况。”</em></p>
-</blockquote>
-<p>####上篇完</p>
-
+        
+          <a class="article-more-a" href="/2017/08/30/扒一扒swift中的unowned和weak上/#more">more >></a>
+        
       
 
       
@@ -277,6 +236,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -314,225 +284,33 @@
     <article id="post-css语法部分" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/30/css语法部分/">CSS部分</a>
+    </h1>
+  
+
+        
+        <a href="/2017/08/30/css语法部分/" class="archive-article-date">
+  	<time datetime="2017-08-30T01:39:11.000Z" itemprop="datePublished">2017-08-30</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <p># </p>
-<blockquote>
-<p>前言: 看了几天HTML标签和CSS布局,我狭义的认为他们就是iOS里面的视图控件了.而且布局相对于iOS要简单一点,虽然我大iOS有AutoLayout,但是UIScrollView之类的控件写起来还是要相对复杂一点的.各有利弊,以后再边学边比较吧.(以上纯属个人看法)</p>
-</blockquote>
-<ul>
-<li><p>1 css注释代码</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*注释部分*/</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<ul>
-<li><p>2 内联式css样式,直接写在现有的HTML标签中<br>从css样式代码插入的形式来看基本可以分为3种: 内联式,嵌入式和外部式三种.<br>内联式: css样式表就是把css代码直接写在现有的HTML标签中.</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">style</span>=<span class="string">"color:blue"</span>&gt;</span>这里是蓝色<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div></pre></td></tr></table></figure>
-<p>  如果有多条css样式代码设置,可以写在一起,中间分好隔开.</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">style</span>=<span class="string">"color:blue;font-size:18px;font-weight:blod"</span>&gt;</span></div><div class="line">这里是文字</div><div class="line"><span class="tag">&lt;/<span class="name">p</span>&gt;</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>2 嵌入式css样式,写在当前的文件中</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span> = <span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line"><span class="undefined">span&#123;</span></div><div class="line"><span class="undefined">color: blue;</span></div><div class="line"><span class="undefined">font-size: 12px;</span></div><div class="line"><span class="undefined">&#125;</span></div><div class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>3 外部式css样式,写在一个单独的文件中<br>也称外联式,把css代码写在一个单独外部文件中,这个css样式文件以”.css”为扩展名.在<head>内(而不是在&lt; style&gt;标签内) 使用<link>标签将css样式文件链接到HTML文件内,代码如下:</head></p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">link</span> <span class="attr">href</span>=<span class="string">"base.css"</span> <span class="attr">rel</span>=<span class="string">"stylesheet"</span> <span class="attr">type</span>=<span class="string">"text/css"</span>/&gt;</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>4 三种样式的优先级<br>内联式 &gt; 嵌入式 &gt; 外部式<br>但是嵌入式&gt;外部式有一个前提：嵌入式css样式的位置一定在外部式的后面.</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">    <span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"Content-Type"</span> <span class="attr">content</span>=<span class="string">"text/html; charset=utf-8"</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>嵌入式css样式<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">         <span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line"><span class="css">                <span class="selector-id">#shijian</span>&#123;</span></div><div class="line"><span class="css">                   <span class="selector-tag">color</span><span class="selector-pseudo">:green</span>;</span></div><div class="line"><span class="css">                   <span class="selector-tag">font-size</span><span class="selector-pseudo">:5px</span>;</span></div><div class="line"><span class="undefined">                &#125;</span></div><div class="line"><span class="undefined">        </span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">link</span> <span class="attr">href</span>=<span class="string">"style.css"</span> <span class="attr">rel</span>=<span class="string">"stylesheet"</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">p</span>&gt;</span>慕课网，<span class="tag">&lt;<span class="name">span</span>&gt;</span>超酷的互联网<span class="tag">&lt;/<span class="name">span</span> &gt;</span>、IT技术免费学习平台，创新的网络一站式学习、<span class="tag">&lt;<span class="name">span</span> <span class="attr">id</span> = <span class="string">"shijian"</span>&gt;</span>实践体验<span class="tag">&lt;/<span class="name">span</span>&gt;</span>；服务及时贴心，内容专业、有趣易学。专注服务互联网工程师快速成为技术高手！<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="comment">&lt;!--style.css中的代码--&gt;</span></div><div class="line">    #shijian&#123;</div><div class="line">       color:blue;</div><div class="line">       font-size:30px;</div><div class="line">    &#125;</div><div class="line">    结论: 此时"实践体验"字体是蓝色的,因为嵌入式css样式的位置在外部式的前面了.</div></pre></td></tr></table></figure>
-</li>
-<li><p>5 类选择器<br>语法: .类选择器名称{css样式代码;</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">1、英文圆点开头</div><div class="line">2、其中类选器名称可以任意起名（但不要起中文噢）</div><div class="line">使用:</div><div class="line"><span class="tag">&lt;<span class="name">span</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">span</span> <span class="attr">class</span> = <span class="string">"stress"</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span></div><div class="line">/*设置类选择器css样式,类前面要加一个英文圆点*/</div><div class="line">.stress&#123;</div><div class="line">    color:red;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>6 ID选择器<br>为标签设置id = “ID名称”<br>ID选择符的前面是”#”</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line"><span class="css"><span class="selector-id">#stress</span>&#123;</span></div><div class="line"><span class="css">    <span class="selector-tag">color</span><span class="selector-pseudo">:red</span>;</span></div><div class="line"><span class="undefined">&#125;</span></div><div class="line"><span class="undefined"></span></div><div class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>勇气<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span>三年级时，我还是一个<span class="tag">&lt;<span class="name">span</span> <span class="attr">id</span>=<span class="string">"stress"</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span>的小女孩，上课从来不敢回答老师提出的问题，生怕回答错了老师会批评我。就一直没有这个勇气来回答老师提出的问题。学校举办的活动我也没勇气参加。<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">p</span>&gt;</span>到了三年级下学期时，我们班上了一节公开课，老师提出了一个很简单的问题，班里很多同学都举手了，甚至成绩比我差很多的，也举手了，还说着："我来，我来。"我环顾了四周，就我没有举手。<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>6 类和ID选择器的区别    </p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">1. ID选择器只能在文档中使用一次.ID在一个HTML文档中,ID选择器只能使用一次,而且仅一次.而类选择器可以使用多次.</div><div class="line">2. 可以使用类选择器词列表方法为一个元素同时设置多个样式.</div><div class="line">.stress&#123;</div><div class="line">    color:red;</div><div class="line">&#125;</div><div class="line">.bigsize&#123;</div><div class="line">    font-size:25px;</div><div class="line">&#125;</div><div class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span>到了<span class="tag">&lt;<span class="name">span</span> <span class="attr">class</span> = <span class="string">"stress bigsize"</span>&gt;</span>三年级<span class="tag">&lt;/<span class="name">span</span>&gt;</span>下学期时<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>7 子选择器</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line">    用大于符号(&gt;),用于选择指定标签元素的第一代子元素.</div><div class="line">    <span class="selector-class">.food</span> &gt; <span class="selector-tag">li</span> &#123;<span class="attribute">borde</span>:<span class="number">1px</span> solid red;&#125;</div><div class="line">    代码如下:</div><div class="line">    &lt;<span class="selector-tag">html</span>&gt;</div><div class="line">&lt;<span class="selector-tag">head</span>&gt;</div><div class="line">&lt;meta http-equiv="Content-Type" content="text/html; charset=utf-8"&gt;</div><div class="line">&lt;title&gt;子选择符&lt;/title&gt;</div><div class="line">&lt;style type="text/css"&gt;</div><div class="line"><span class="selector-class">.food</span> &gt; <span class="selector-tag">li</span>&#123;<span class="attribute">color</span>: blue;&#125;<span class="comment">/*添加边框样式（粗细为1px， 颜色为红色的实线）*/</span></div><div class="line"><span class="selector-class">.first</span> &gt; <span class="selector-tag">span</span>&#123;<span class="attribute">border</span>:<span class="number">1px</span> solid red;&#125;</div><div class="line">&lt;/style&gt;</div><div class="line">&lt;/head&gt;</div><div class="line">&lt;<span class="selector-tag">body</span>&gt;</div><div class="line">&lt;p class="first"&gt;三年级时，&lt;span&gt;我还是一个&lt;span&gt;胆小如鼠&lt;/span&gt;的小女孩&lt;/span&gt;，上课从来不敢回答老师提出的问题，生怕回答错了老师会批评我。就一直没有这个勇气来回答老师提出的问题。学校举办的活动我也没勇气参加。&lt;/p&gt;</div><div class="line">&lt;h1&gt;食物&lt;/h1&gt;</div><div class="line">&lt;ul class="food"&gt;</div><div class="line">    &lt;<span class="selector-tag">li</span>&gt;水果</div><div class="line">        &lt;<span class="selector-tag">ul</span>&gt;</div><div class="line">        	&lt;li&gt;香蕉&lt;/li&gt;</div><div class="line">            &lt;li&gt;苹果&lt;/li&gt;</div><div class="line">            &lt;li&gt;梨&lt;/li&gt;</div><div class="line">        &lt;/ul&gt;</div><div class="line">    &lt;/li&gt;</div><div class="line">    &lt;<span class="selector-tag">li</span>&gt;蔬菜</div><div class="line">    	&lt;<span class="selector-tag">ul</span>&gt;</div><div class="line">        	&lt;li&gt;白菜&lt;/li&gt;</div><div class="line">            &lt;li&gt;油菜&lt;/li&gt;</div><div class="line">            &lt;li&gt;卷心菜&lt;/li&gt;</div><div class="line">        &lt;/ul&gt;</div><div class="line">    &lt;/li&gt;</div><div class="line">&lt;/ul&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;/html&gt;</div><div class="line">效果图时这样的:</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-42ec82bbf2b0749e.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14954364402366.jpg"></p>
-<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">子选择器我开始没看懂,但是看到评论区有个人分析,才恍然大悟,&gt;这个“选择指定标签元素的第一代子元素”就是让样式只作用于它的孩子，不作用与他的孙子。注意看这段代码:</div><div class="line">&lt;p class=&quot;first&quot;&gt;&lt;span&gt;我还是一个&lt;span&gt;胆小如鼠&lt;/span&gt;的小女孩&lt;/span&gt;&lt;/p&gt;</div><div class="line">看清了外面的span是p标签的亲儿子,而里面的span是p标签的孙子,所有,子选择器选择的是外面的span标签,所以是外面的span元素有红色边框...(说实话,技术课程搞那么多虚的概念不如大白话来的明白!)</div></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>8 包含(后代)选择器,加入空格,用于选择指定标签元素下的后辈元素.</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-class">.first</span> <span class="selector-tag">span</span>&#123;<span class="attribute">color</span>: red;&#125;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>与子选择器的区别: 子选择器仅是指它的直接后代,而后代选择器作用与所有后代子元素.</p>
-<pre><code><figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"Content-Type"</span> <span class="attr">content</span>=<span class="string">"text/html; charset=utf-8"</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>后代选择器<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line"><span class="css"><span class="selector-class">.first</span> <span class="selector-tag">span</span>&#123;<span class="attribute">color</span>:red;<span class="attribute">border</span>: <span class="number">1px</span> solid blue;&#125;</span></div><div class="line"><span class="undefined"></span></div><div class="line"><span class="css"><span class="selector-class">.food</span> <span class="selector-tag">li</span>&#123;</span></div><div class="line"><span class="css">    <span class="selector-tag">border</span><span class="selector-pseudo">:1px</span> <span class="selector-tag">solid</span> <span class="selector-tag">red</span>;<span class="comment">/*添加边框样式（粗细为1px， 颜色为红色的实线）*/</span>	</span></div><div class="line"><span class="undefined">&#125;</span></div><div class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line"> <span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"first"</span>&gt;</span>三年级时，<span class="tag">&lt;<span class="name">span</span>&gt;</span>我还是一个<span class="tag">&lt;<span class="name">span</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span>的小女孩<span class="tag">&lt;/<span class="name">span</span>&gt;</span>，上课从来不敢回答老师提出的问题，生怕回答错了老师会批评我。就一直没有这个勇气来回答老师提出的问题。学校举办的活动我也没勇气参加。<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line"><span class="comment">&lt;!--下面是本小节任务代码--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">ul</span> <span class="attr">class</span>=<span class="string">"food"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>水果</div><div class="line">        <span class="tag">&lt;<span class="name">ul</span>&gt;</span></div><div class="line">        	<span class="tag">&lt;<span class="name">li</span>&gt;</span>香蕉<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">li</span>&gt;</span>苹果<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">li</span>&gt;</span>梨<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">li</span>&gt;</span>蔬菜</div><div class="line">    	<span class="tag">&lt;<span class="name">ul</span>&gt;</span></div><div class="line">        	<span class="tag">&lt;<span class="name">li</span>&gt;</span>白菜<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">li</span>&gt;</span>油菜<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">li</span>&gt;</span>卷心菜<span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">li</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">ul</span>&gt;</span></div><div class="line">   </div><div class="line">代码运行结果:</div></pre></td></tr></table></figure>
-</code></pre><p><img src="http://upload-images.jianshu.io/upload_images/1526313-3b1e59cba35d4c82.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/500" alt="14954371747130.jpg"></p>
-<p><strong>注意:</strong> <a href="http://www.imooc.com/code/2024" target="_blank" rel="external">慕课</a>给出的例子还是不太容易理解,我对代码稍稍做了修改,更能轻易的对比出包含选择器和子选择器的区.</p>
-<ul>
-<li><p>9 通用选择器<br>使用一个(*)指定,作用是匹配html中所有标签元素</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">&#123;<span class="attribute">color</span>:red;&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>10 伪类选择符<br>它允许给html不存在的标签(标签的某种状态)设置样式,比如说我们给html中一个标签元素的鼠标滑过的状态来设置字体颜色:</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">a</span><span class="selector-pseudo">:hover</span>&#123;<span class="attribute">color</span>:red;&#125;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>意思就是为a标签划过的状态设置字体颜色变红.目前为止,可以兼容所有浏览器的”伪类选择符”就是a标签上使用 :hover了,比较常用的还是 a:hover 的组合    </p>
-<ul>
-<li><p>11 分组选择器<br>当你想为html中多个标签元素设置同一个样式时,可以使用分组选择符;</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">h1</span>,<span class="selector-tag">span</span>&#123;<span class="attribute">color</span>:red;&#125;</div><div class="line"><span class="comment">/*相当于*/</span></div><div class="line"><span class="selector-tag">h1</span>&#123;<span class="attribute">color</span>:red;&#125;</div><div class="line"><span class="selector-tag">span</span>&#123;<span class="attribute">color</span>:red;&#125;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>示例:</p>
-<pre><code><figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"Content-Type"</span> <span class="attr">content</span>=<span class="string">"text/html; charset=utf-8"</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>分组选择符<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line"><span class="undefined"></span></div><div class="line"><span class="css"><span class="selector-class">.first</span> <span class="selector-tag">span</span>,<span class="selector-id">#second</span> <span class="selector-tag">span</span>,<span class="selector-class">.askMe</span> <span class="selector-tag">span</span>&#123;<span class="attribute">color</span>:green;&#125;</span></div><div class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">h1</span>&gt;</span>勇气<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"first"</span>&gt;</span>三年级时，我还是一个<span class="tag">&lt;<span class="name">span</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span>的小女孩，上课从来不敢回答老师提出的问题，生怕回答错了老师会<span class="tag">&lt;<span class="name">span</span> <span class="attr">class</span> = <span class="string">"askMe"</span>&gt;</span>批评我<span class="tag">&lt;/<span class="name">span</span>&gt;</span>。就一直没有这个勇气来回答老师提出的问题。学校举办的活动我也没勇气参加。<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">id</span>=<span class="string">"second"</span>&gt;</span>到了三年级下学期时，我们班上了一节公开课，老师提出了一个很<span class="tag">&lt;<span class="name">span</span>&gt;</span>简单<span class="tag">&lt;/<span class="name">span</span>&gt;</span>的问题，班里很多同学都举手了，甚至成绩比我差很多的，也举手了，还说着："我来，我来。"我环顾了四周，就我没有举手。<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line">    ![](http://upload-images.jianshu.io/upload_images/1526313-760d0a2982c0befd.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)</div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>12 继承<br>cs的某些样式是具有继承性的,那么什么是继承呢?继承是一种规则,它允许样式不仅应用于某个特定html标签元素,而且应用于其后代.比如下面代码: 某种颜色应用于p标签,这里子元素为span标签.</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">p&#123;color:red;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span>三年级时,我还是一个<span class="tag">&lt;<span class="name">span</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span>的小女孩.<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>span中的文本也被设置成了红色.但有一些css样式是不具有继承性的.比如 border:1px solid red;    </p>
-<ul>
-<li><p>13 特殊性<br>有时候我们为同一个元素设置了不同的css样式代码,那么元素会启用哪一个css样式呢?</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">p&#123;color:red;&#125;</div><div class="line">.first&#123;color:green;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span>三年级时,我还是一个<span class="tag">&lt;<span class="name">span</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span>的小女孩<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line">/*会显示绿色,浏览器会按照权值来判断使用哪种css样式,哪种权值高的就使用哪种css样式*/</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><strong>权值的规则:</strong><br>标签权值为1,类选择符的权值为10,ID选择符的权值最高为100.继承也有权值,但是最低(0.1)    </p>
-<ul>
-<li><p>14 层叠<br>一个元素有多个css样式,当有相同权重的样式存在时,会根据这些css样式的前后顺序来解决,处于最后面的css样式会被应用.</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">    p&#123;color:red;&#125;</div><div class="line">    p&#123;color:green;&#125;</div><div class="line">    <span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span>=<span class="string">"first"</span>&gt;</span>三年级时，我还是一个<span class="tag">&lt;<span class="name">span</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span>的小女孩。<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div><div class="line">    /*最后 p 中的文本会设置为green，这个层叠很好理解，理解为后面的样式会覆盖前面的样式。所以前面的css样式优先级就不难理解了：</div><div class="line">内联样式表（标签内部）&gt; 嵌入样式表（当前文件中）&gt; 外部样式表（外部文件中）。*/</div></pre></td></tr></table></figure>
-</li>
-<li><p>15 手动设置最高权值<br>使用!important手动设置某些样式的最高权值</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">p&#123;color:red !important;&#125;</div><div class="line">p&#123;color:green;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span> = <span class="string">"first"</span>&gt;</span> 三年级时,我还是一个<span class="tag">&lt;<span class="name">span</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span>的小女孩.<span class="tag">&lt;/<span class="name">span</span>&gt;</span></div><div class="line">/*p段落中的文本会显示红色,尽管红色设置在绿色前面*/</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>注意: !important要写在分号的前面,即使是下面的代码(类选择器的权值高于标签),p段落的文本也会显示红色哦~</p>
-<pre><code><figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">p&#123;color: red !important;&#125;</div><div class="line">.first&#123;color: green&#125;</div><div class="line"><span class="tag">&lt;<span class="name">p</span> <span class="attr">class</span> = <span class="string">"first"</span>&gt;</span> 三年级时,我还是一个<span class="tag">&lt;<span class="name">span</span>&gt;</span>胆小如鼠<span class="tag">&lt;/<span class="name">span</span>&gt;</span>的小女孩.<span class="tag">&lt;/<span class="name">span</span>&gt;</span></div></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>16 文字排版 – 字体<br>为网页的文字设置字体为宋体,代码:</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">body</span>&#123;<span class="attribute">font-family</span>: <span class="string">"宋体"</span>;&#125;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p>注意: 不要设置不常用的字体,因为如果用户本地电脑上没有安装你设置的字体,就会显示浏览器的默认字体.一般的网页喜欢设置”微软雅黑”:</p>
-<pre><code><figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">body</span>&#123;<span class="attribute">font-family</span>: <span class="string">"Microsoft Yahei"</span>;&#125; </div><div class="line"><span class="comment">/*or*/</span></div><div class="line"><span class="selector-tag">body</span>&#123;<span class="attribute">font-family</span>: <span class="string">"微软雅黑"</span>;&#125;</div><div class="line"><span class="comment">/*第一种比第二种兼容性更好一些*/</span></div></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>17 文字排版</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*字号、颜色:*/</span></div><div class="line"><span class="selector-tag">body</span>&#123;<span class="attribute">font-size</span>: <span class="number">12px</span>;<span class="attribute">color</span>: <span class="number">#666</span>&#125;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<pre><code><figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*粗体:*/</span></div><div class="line"><span class="selector-tag">p</span> <span class="selector-tag">span</span>&#123;<span class="attribute">font-weight</span>: bold;&#125;</div></pre></td></tr></table></figure>
-
-
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*斜体*/</span></div><div class="line"><span class="selector-tag">p</span> <span class="selector-tag">a</span>&#123;<span class="attribute">font-style</span>: italic;&#125;</div><div class="line">&lt;p&gt;三年级时，我还是一个&lt;a&gt;胆小如鼠&lt;/a&gt;的小女孩。&lt;/p&gt;</div></pre></td></tr></table></figure>
-
-
-<figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*下划线*/</span></div><div class="line"><span class="selector-tag">p</span> <span class="selector-tag">a</span>&#123;<span class="attribute">text-decoration</span>: underline;&#125;</div><div class="line">&lt;p&gt;三年级时，我还是一个&lt;a&gt;胆小如鼠&lt;/a&gt;的小女孩。&lt;/p&gt;</div></pre></td></tr></table></figure>
-
-
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">/*删除线*/</div><div class="line"><span class="tag">&lt;<span class="name">html</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">meta</span> <span class="attr">http-equiv</span>=<span class="string">"Content-Type"</span> <span class="attr">content</span>=<span class="string">"text/html; charset=gb2312"</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>删除样式<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">style</span> <span class="attr">type</span>=<span class="string">"text/css"</span>&gt;</span><span class="undefined"></span></div><div class="line"><span class="css"><span class="selector-class">.oldPrice</span>&#123;<span class="attribute">text-decoration</span>: line-through;&#125;</span></div><div class="line"><span class="undefined"></span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span>原价：<span class="tag">&lt;<span class="name">span</span> <span class="attr">class</span>=<span class="string">"oldPrice"</span>&gt;</span>300<span class="tag">&lt;/<span class="name">span</span>&gt;</span>元 现价：230 元<span class="tag">&lt;/<span class="name">p</span>&gt;</span> </div><div class="line"><span class="tag">&lt;/<span class="name">body</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">html</span>&gt;</span></div></pre></td></tr></table></figure>
-
-
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!--段落排版,缩进--&gt;</span></div><div class="line">p&#123;text-indent: 2em;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span>1922年的春天，一个想要成名名叫尼克卡拉威（托比?马奎尔Tobey Maguire 饰）的作家，离开了美国中西部，来到了纽约。那是一个道德感渐失，爵士乐流行，走私为王，股票飞涨的时代。为了追寻他的美国梦，他搬入纽约附近一海湾居住。<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div></pre></td></tr></table></figure>
-
-
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!--段落排版,行间距(行高)--&gt;</span></div><div class="line">p&#123;line-height: 1.5em;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">p</span>&gt;</span>菲茨杰拉德，二十世纪美国文学巨擘之一，兼具作家和编剧双重身份。他以诗人的敏感和戏剧家的想象为"爵士乐时代"吟唱华丽挽歌，其诗人和梦想家的气质亦为那个奢靡年代的不二注解。<span class="tag">&lt;/<span class="name">p</span>&gt;</span></div></pre></td></tr></table></figure>
-
-
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!--中文文字间隔,字母间隔--&gt;</span></div><div class="line">h1&#123;letter-spacing: 50px;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>了不起的盖茨比<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></div><div class="line"><span class="comment">&lt;!--英文单词之间的间隔--&gt;</span></div><div class="line">h1&#123;word-spacing: 50px;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>welcome to China!<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></div></pre></td></tr></table></figure>
-
-
-<figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!--段落排版,对齐--&gt;</span></div><div class="line">h1&#123;text-align: center;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>了不起的盖茨比<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></div><div class="line"><span class="comment">&lt;!--居左--&gt;</span></div><div class="line">h1&#123;text-align: left;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>了不起的盖茨比<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></div><div class="line"><span class="comment">&lt;!--居右--&gt;</span></div><div class="line">h1&#123;text-align: right;&#125;</div><div class="line"><span class="tag">&lt;<span class="name">h1</span>&gt;</span>了不起的盖茨比<span class="tag">&lt;/<span class="name">h1</span>&gt;</span></div></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>18 元素分类<br>html中的标签元素大体被分为三种不同的类型: 块状元素、内联元素(又叫行内元素)和内联块状元素.    </p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="comment">&lt;!--常用的块状元素--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">div</span>&gt;</span>、<span class="tag">&lt;<span class="name">p</span>&gt;</span>、<span class="tag">&lt;<span class="name">h1</span>&gt;</span>...<span class="tag">&lt;<span class="name">h6</span>&gt;</span>、<span class="tag">&lt;<span class="name">ol</span>&gt;</span>、<span class="tag">&lt;<span class="name">ul</span>&gt;</span>、<span class="tag">&lt;<span class="name">dl</span>&gt;</span>、<span class="tag">&lt;<span class="name">table</span>&gt;</span>、<span class="tag">&lt;<span class="name">address</span>&gt;</span>、<span class="tag">&lt;<span class="name">blockquote</span>&gt;</span> 、<span class="tag">&lt;<span class="name">form</span>&gt;</span></div><div class="line"><span class="comment">&lt;!--常用的内联元素--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">a</span>&gt;</span>、<span class="tag">&lt;<span class="name">span</span>&gt;</span>、<span class="tag">&lt;<span class="name">br</span>&gt;</span>、<span class="tag">&lt;<span class="name">i</span>&gt;</span>、<span class="tag">&lt;<span class="name">em</span>&gt;</span>、<span class="tag">&lt;<span class="name">strong</span>&gt;</span>、<span class="tag">&lt;<span class="name">label</span>&gt;</span>、<span class="tag">&lt;<span class="name">q</span>&gt;</span>、<span class="tag">&lt;<span class="name">var</span>&gt;</span>、<span class="tag">&lt;<span class="name">cite</span>&gt;</span>、<span class="tag">&lt;<span class="name">code</span>&gt;</span></div><div class="line"><span class="comment">&lt;!--常用的内联块状元素--&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">img</span>&gt;</span>、<span class="tag">&lt;<span class="name">input</span>&gt;</span></div></pre></td></tr></table></figure>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">块级元素特点：</div><div class="line">1、每个块级元素都从新的一行开始，并且其后的元素也另起一行。（真霸道，一个块级元素独占一行）</div><div class="line">2、元素的高度、宽度、行高以及顶和底边距都可设置。</div><div class="line">3、元素宽度在不设置的情况下，是它本身父容器的100%（和父元素的宽度一致），除非设定一个宽度。</div><div class="line">将内联元素a转换为块状元素:</div><div class="line">a&#123;display: block;&#125;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">内联元素特点：</div><div class="line">1、和其他元素都在一行上；</div><div class="line">2、元素的高度、宽度及顶部和底部边距不可设置；</div><div class="line">3、元素的宽度就是它包含的文字或图片的宽度，不可改变。</div><div class="line">将块状元素转换为内联元素:</div><div class="line">div&#123;display: inline;&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">内联块状元素特点:</div><div class="line">同时具有内联元素和块状元素的特点.</div><div class="line">1、和其它元素都在一行上;</div><div class="line">2、元素的高度、宽度、行高以及顶和低边距都可设置</div><div class="line">将元素设置为内联块状元素:</div><div class="line">display: inline-block;</div></pre></td></tr></table></figure>
-<pre><code><figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line">&lt;!--a </div><div class="line">元素设置了宽和高，但都没有起到作用，原因是a在默认的时候是内联元素，内联元素是不可以设置宽和高的。如果将a元素设置为内联块状元素就可以了.</div><div class="line">--&gt;</div><div class="line">&lt;html&gt;</div><div class="line">&lt;head&gt;</div><div class="line">&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=gb2312&quot; /&gt;</div><div class="line">&lt;title&gt;内联块状元素&lt;/title&gt;</div><div class="line">&lt;style type=&quot;text/css&quot;&gt;</div><div class="line">a&#123;</div><div class="line">    display: inline-block;</div><div class="line">	width:20px;/*在默认情况下宽度不起作用*/</div><div class="line">	height:20px;/*在默认情况下高度不起作用*/</div><div class="line">	background:pink;/*设置背景颜色为粉色*/</div><div class="line">	text-align:center; /*设置文本居中显示*/</div><div class="line">&#125;</div><div class="line">&lt;/style&gt;</div><div class="line">&lt;/head&gt;</div><div class="line">&lt;body&gt;</div><div class="line">&lt;a&gt;1&lt;/a&gt;</div><div class="line">&lt;a&gt;2&lt;/a&gt;</div><div class="line">&lt;a&gt;3&lt;/a&gt;</div><div class="line">&lt;a&gt;4&lt;/a&gt;</div><div class="line">&lt;/body&gt;</div><div class="line">&lt;/html&gt;</div></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>19 盒模型的边框</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*边框: 盒子模型的边框就是围绕着内容及补白的线,这条线可以设置它的粗细、样式和颜色*/</span></div><div class="line"><span class="selector-tag">div</span>&#123; <span class="attribute">border</span>: <span class="number">2px</span> solid red; &#125;</div><div class="line"><span class="comment">/*也可以写成这样*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;</div><div class="line">    <span class="attribute">border-width</span>: <span class="number">2px</span>;</div><div class="line">    <span class="attribute">border-style</span>: solid;</div><div class="line">    <span class="attribute">border-color</span>: red;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">注意:</div><div class="line">1、border-style（边框样式）常见样式有：</div><div class="line">dashed（虚线）| dotted（点线）| solid（实线）。</div><div class="line">2、border-color（边框颜色）中的颜色可设置为十六进制颜色，如:</div><div class="line">border-color:#888;//前面的井号不要忘掉。</div><div class="line">3、border-width（边框宽度）中的宽度也可以设置为：</div><div class="line">thin | medium | thick（但不是很常用），最常还是用象素（px）。</div></pre></td></tr></table></figure>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*单独设置一个方向的边框*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;<span class="attribute">border-bottom</span>: <span class="number">1px</span> solid red;&#125;</div><div class="line"><span class="comment">/*同样可以使用下面的代码设置其他方向的边框*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;</div><div class="line">    <span class="attribute">border-top</span>: <span class="number">1px</span> solid red;</div><div class="line">    <span class="attribute">border-right</span>: <span class="number">1px</span> solid red;</div><div class="line">    <span class="attribute">border-left</span>: <span class="number">1px</span> solid red;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>20 盒模型的宽度和高度    </p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">盒模型的宽度和高度指的是填充以里的内容范围.</div><div class="line">一个元素实际宽度(盒子的宽度) = 左边界 + 左边框 + 左填充 + 内容宽度 + 右填充 + 有边框 + 右边界.</div><div class="line">元素的高度同理.</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-14cb27777005677e.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="14951611926229.jpg"></p>
-<ul>
-<li><p>21 盒模型的填充</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">元素的内容和边框之间是可以设置距离的,称之为"填充",填充可分为上右下左(顺时针).</div><div class="line"><span class="selector-tag">div</span>&#123;<span class="attribute">padding</span>: <span class="number">20px</span> <span class="number">10px</span> <span class="number">15px</span> <span class="number">30px</span>;&#125;</div><div class="line"><span class="comment">/*顺序不要搞混,可以分开写上面的代码*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;</div><div class="line">    <span class="attribute">padding-top</span>: <span class="number">20px</span>;</div><div class="line">    <span class="attribute">padding-right</span>: <span class="number">10px</span>;</div><div class="line">    <span class="attribute">padding-bottom</span>: <span class="number">15px</span>;</div><div class="line">    <span class="attribute">padding-left</span>: <span class="number">30px</span>;</div><div class="line">&#125;</div><div class="line"><span class="comment">/*如果上右下左的填充都为10px,可以这样*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;<span class="attribute">padding</span>: <span class="number">10px</span>;&#125;</div><div class="line"><span class="comment">/*如果上下填充一样,左右一样,可以这样*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;<span class="attribute">padding</span>: <span class="number">10px</span> <span class="number">20px</span>;&#125;</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-a027d2215e99871b.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/300" alt="~HQX@~G~H7P5%0I~~-OU5-O.jpg"></p>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-a8670ad8655789f6.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14951644122414.jpg"></p>
-<ul>
-<li><p>22 盒模型的边界</p>
-  <figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*使用边界margin来设置,边界也是可分为上右下左:*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;<span class="attribute">margin</span>: <span class="number">20px</span> <span class="number">10px</span> <span class="number">15px</span> <span class="number">30px</span>;&#125;</div><div class="line"><span class="comment">/*也可以分开写*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;</div><div class="line">    <span class="attribute">margin-top</span>: <span class="number">20px</span>;</div><div class="line">    <span class="attribute">margin-right</span>: <span class="number">10px</span>;</div><div class="line">    <span class="attribute">margin-bottom</span>: <span class="number">15px</span>;</div><div class="line">    <span class="attribute">margin-left</span>: <span class="number">30px</span>;</div><div class="line">&#125;</div><div class="line"><span class="comment">/*边界都一样的*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;</div><div class="line">    <span class="attribute">margin</span>: <span class="number">10px</span>;</div><div class="line">&#125;</div><div class="line"><span class="comment">/*上下一样,左右一样的*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;</div><div class="line">    <span class="attribute">margin</span>: <span class="number">10px</span> <span class="number">20px</span>;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">结论: padding和margin的区别,padding在边框里,margin在边框外</div></pre></td></tr></table></figure>
-</li>
-<li><p>23 css布局模型</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">清楚了CSS 盒模型的基本概念、 盒模型类型， 我们就可以深入探讨网页布局的基本模型了。布局模型与盒模型一样都是 CSS 最基本、 最核心的概念。 但布局模型是建立在盒模型基础之上，又不同于我们常说的 CSS 布局样式或 CSS 布局模板。如果说布局模型是本，那么 CSS 布局模板就是末了，是外在的表现形式。 </div><div class="line">CSS包含3种基本的布局模型，用英文概括为：Flow、Layer 和 Float。</div><div class="line">在网页中，元素有三种布局模型：</div><div class="line">1、流动模型（Flow）</div><div class="line">2、浮动模型 (Float)</div><div class="line">3、层模型（Layer）</div></pre></td></tr></table></figure>
-</li>
-<li><p>24 流动模型   </p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">流动是默认的网页布局模式.网页在默认状态下的HTML网页元素都是根据流动模型来分布网页内容的.流动布局模型具有2个比较典型的特征:</div><div class="line">第一,块状元素都会在所处的包含元素内自上而下按顺序垂直延伸分布,因为在默认状态下,块状元素的宽度都为100%.实际上,块状元素都会以行的形式占据位置.</div><div class="line">第二,在流动模型下,内联元素都会在所处的包含元素内从左到右水平分布显示.</div></pre></td></tr></table></figure>
-</li>
-<li><p>25 浮动模型</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line">块状元素独占一行,如果我们想让两个块状元素并排显示,怎么办呢?答案是设置元素浮动.</div><div class="line">默认情况下,任何元素都是不能浮动的,但是可以用CSS定义为浮动.如下代码可以实现两个div元素一行显示</div><div class="line">div&#123;</div><div class="line">    width: 200px;</div><div class="line">    height: 200px;</div><div class="line">    border: 2px red solid;</div><div class="line">    float: left</div><div class="line">&#125;</div><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span> = <span class="string">"div1"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span> = <span class="string">"div2"</span>&gt;</span><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-f8c5f013faff9703.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14951841449148.jpg"><br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">/*当然也可以设置两个元素右浮动,也可以实现一行显示*/</div><div class="line">div&#123;</div><div class="line">    width: 200px;</div><div class="line">    height: 200px;</div><div class="line">    border: 2px red solid;</div><div class="line">    float: right;</div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-08bfcd07776f0ca5.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14951842383390.jpg"></p>
-<pre><code><figure class="highlight css"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="comment">/*设置一左一右*/</span></div><div class="line"><span class="selector-tag">div</span>&#123;</div><div class="line">    <span class="attribute">width</span>: <span class="number">200px</span>;</div><div class="line">    <span class="attribute">height</span>: <span class="number">200px</span>;</div><div class="line">    <span class="attribute">border</span>: <span class="number">2px</span> red solid;</div><div class="line">&#125;</div><div class="line">#<span class="selector-class">.div1</span> &#123;<span class="attribute">float</span>: left;&#125;</div><div class="line">#<span class="selector-class">.div2</span> &#123;<span class="attribute">float</span>: right;&#125;</div></pre></td></tr></table></figure>
-</code></pre><p><img src="http://upload-images.jianshu.io/upload_images/1526313-1f0638416449488a.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14951843627308.jpg"></p>
-<ul>
-<li><p>26 层模型</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">CSS定义了一组定位(positioning)属性来支持层布局模型.</div><div class="line">层模型有三种形式:</div><div class="line">1. 绝对定位(position: absolute)</div><div class="line">2. 相对定位(position: relative)</div><div class="line">3. 固定定位(position: fixed)</div></pre></td></tr></table></figure>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">层模型的绝对定位: 将元素从文档流中拖出来,然后使用left 、right、top、bottom属性相对于其最接近的一个具有定位属性的父包含块进行绝对定位.如果不存在这样的包含块,则相对于body元素,即相对于浏览器窗口.</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><strong>个人总结: 相当于移动端开发的frame布局(这点大家都很懂,蜜汁微笑)</strong></p>
-<pre><code><figure class="highlight"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="selector-tag">div</span>&#123;</div><div class="line">    <span class="attribute">width</span>: <span class="number">200px</span>;</div><div class="line">    <span class="attribute">height</span>: <span class="number">200px</span>;</div><div class="line">    <span class="attribute">border</span>: <span class="number">2px</span> red solid;</div><div class="line">    <span class="attribute">position</span>: absolute;</div><div class="line">    <span class="attribute">left</span>: <span class="number">100px</span>;</div><div class="line">    <span class="attribute">top</span>: <span class="number">50px</span>;</div><div class="line">&#125;</div><div class="line">&lt;div id = "div1"&gt;&lt;/div&gt;</div></pre></td></tr></table></figure>
-</code></pre><p>效果如下:</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-31f9101bc5c9d49c.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/500" alt="14951852082151.jpg"></p>
-   <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">层模型的相对定位</div><div class="line">position: relative(表示相对定位),它通过left、right、top、bottom属性确定元素</div><div class="line">在正常文档流中的偏移位置.首先按static(float)方式生成一个元素(并且元素像层一样浮动</div><div class="line">了起来),然后相对于以前的位置移动,移动的方向和幅度由left、right、top、bottom属性</div><div class="line">确定,偏移前的位置保留不动.</div><div class="line">如下代码实现相对于以前位置向下移动50px,向右移动100px;</div><div class="line">#div1&#123;</div><div class="line">    width: 200px;</div><div class="line">    height: 200px;</div><div class="line">    border: 2px red solid;</div><div class="line">    position: relative;</div><div class="line">    left: 100px;</div><div class="line">    top: 50px;</div><div class="line">&#125;</div><div class="line">&lt;div id = &quot;div1&quot;&gt;&lt;/div&gt;</div></pre></td></tr></table></figure>
-<p>效果图:<br><img src="http://upload-images.jianshu.io/upload_images/1526313-cf931cbafe4aa613.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14951876467910.jpg"></p>
-<pre><code> /*如果加上这段代码,便能清楚的理解&quot;偏移前的位置保留不动&quot;了,效果图如下*/
-&lt;body&gt;
-    &lt;div id=&quot;div1&quot;&gt;&lt;/div&gt;&lt;span&gt;偏移前的位置还保留不动，覆盖不了前面的div没有偏移前的位置&lt;/span&gt;
-&lt;/body&gt;
-</code></pre><p><img src="http://upload-images.jianshu.io/upload_images/1526313-cf75f516e4dbcd17.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14951877626489.jpg"></p>
-<pre><code>层模型的固定定位:
-注意: 如果你是移动端开发者,你可以把它理解成一个悬浮框(解释的内容可以跳开不看了),如果不明白,再去看如下解释
-fixed: 表示固定定位,与absolute定位类型类似,但它的相对移动的坐标是视图(屏幕内的网页窗口)本身,由于视图本身是固定的,他不会随浏览器窗口的滚动条滚动而变化,除非你在屏幕中移动浏览器窗口的屏幕位置,或改变浏览器窗口的显示大小,因此固定定位的元素会始终位于浏览器窗口视图的某个位置,不会受到文档流动影响.
-代码:
-#div1{
-  width:200px;
-  height:200px; 
-  border:2px red solid; 
-  position: fixed; 
-  bottom: 0; 
-  right: 0;
-}
-&lt;div id=&quot;div1&quot;&gt;&lt;/div&gt;
-</code></pre><ul>
-<li><p>27 relative 与 Absolute组合使用</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line">使用position: absolute 可以实现被设置元素相对于浏览器设置定位,但是可不可以相对其它元素进行定位呢?答案是可以的,使用 position: relative来帮忙,但是必须遵守下面的规范:</div><div class="line">1. 参照定位的元素必须是相对定位元素的前辈元素(相当于iOS的父控件):</div><div class="line"><span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span> = <span class="string">"box1"</span>&gt;</span> <span class="comment">&lt;!--参照定位元素--&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">div</span> <span class="attr">id</span> = <span class="string">"box2"</span>&gt;</span>相对参照元素进行定位<span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">div</span>&gt;</span></div><div class="line">2. 参照定位的元素必须加入 position: relative;</div><div class="line">#box1&#123;</div><div class="line">    width: 200px;</div><div class="line">    height: 200px;</div><div class="line">    position: relative;</div><div class="line">&#125;</div><div class="line">3. 定位元素加入position: absolute,便可以使用top、bottom、left、right来进行偏移定位了.</div><div class="line">#box2&#123;</div><div class="line">    position: absolute;</div><div class="line">    top: 200px;</div><div class="line">    left: 30px;</div><div class="line">&#125;</div><div class="line">这样,box2就可以相对于父元素box1定位了(这里注意: 参照物此时就可以不是浏览器了,而可以自由设置了).</div><div class="line">个人总结: 被定位元素想要相对于父类元素设置绝对定位,需父类元素实现 position: relative.</div></pre></td></tr></table></figure>
-</li>
-<li><p>28 盒模型代码简写</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">还记得在讲盒模型时外边距(margin)、内边距(padding)和边框(border)设置上下左右四个方向的边距是按照顺时针方向设置的：上右下左。具体应用在margin和padding的例子如下：</div><div class="line">margin:10px 15px 12px 14px;/*上设置为10px、右设置为15px、下设置为12px、左设置为14px*/</div><div class="line">通常有下面三种缩写方法:</div><div class="line"></div><div class="line">1、如果top、right、bottom、left的值相同，如下面代码：</div><div class="line">margin:10px 10px 10px 10px;</div><div class="line">可缩写为:</div><div class="line">margin:10px;</div><div class="line"></div><div class="line">2、如果top和bottom值相同、left和 right的值相同，如下面代码：</div><div class="line">margin:10px 20px 10px 20px;</div><div class="line">可缩写为:</div><div class="line">margin: 10px 20px;</div><div class="line"></div><div class="line">3、如果left和right的值相同，如下面代码：</div><div class="line">margin:10px 20px 30px 20px;</div><div class="line">可缩写为:</div><div class="line">margin: 10px 20px 20px;</div><div class="line"></div><div class="line">注意：padding、border的缩写方法和margin是一致的。</div></pre></td></tr></table></figure>
-</li>
-<li><p>29 字体缩写</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">网页中的字体css样式代码也有他自己的缩写方式，下面是给网页设置字体的代码：</div><div class="line">body&#123;</div><div class="line">    font-style:italic;</div><div class="line">    font-variant:small-caps; </div><div class="line">    font-weight:bold; </div><div class="line">    font-size:12px; </div><div class="line">    line-height:1.5em; </div><div class="line">    font-family:&quot;宋体&quot;,sans-serif;</div><div class="line">&#125;</div><div class="line">这么多行代码可以缩写为一句:</div><div class="line">body&#123;</div><div class="line">    font: italic small-caps bold 12px/1.5em &quot;宋体&quot;,sans-serif;</div><div class="line">&#125;</div><div class="line">注意:</div><div class="line">1、使用这一简写方式你至少要指定 font-size 和 font-family 属性，其他的属性(如 font-weight、font-style、font-variant、line-height)如未指定将自动使用默认值。</div><div class="line"></div><div class="line">2、在缩写时 font-size 与 line-height 中间要加入“/”斜扛。</div><div class="line"></div><div class="line">一般情况下因为对于中文网站，英文还是比较少的，所以下面缩写代码比较常用：</div><div class="line">body&#123;</div><div class="line">    font:12px/1.5em  &quot;宋体&quot;,sans-serif;</div><div class="line">&#125;</div><div class="line">只是有字号、行间距、中文字体、英文字体设置。</div></pre></td></tr></table></figure>
-</li>
-<li><p>30 颜色值</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">1、英文命令颜色</div><div class="line">p&#123;color:red;&#125;</div><div class="line"></div><div class="line">2、RGB颜色</div><div class="line">这个与 photoshop 中的 RGB 颜色是一致的，由 R(red)、G(green)、B(blue) 三种颜色的比例来配色。</div><div class="line">p&#123;color:rgb(133,45,200);&#125;</div><div class="line">每一项的值可以是 0~255 之间的整数，也可以是 0%~100% 的百分数。如：</div><div class="line">p&#123;color:rgb(20%,33%,25%);&#125;</div><div class="line"></div><div class="line">3、十六进制颜色</div><div class="line">这种颜色设置方法是现在比较普遍使用的方法，其原理其实也是 RGB 设置，但是其每一项的值由 0-255 变成了十六进制 00-ff。</div><div class="line">p&#123;color:#00ffff;&#125;</div></pre></td></tr></table></figure>
-</li>
-<li><p>31 长度值</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">长度单位总结一下，目前比较常用到px（像素）、em、% 百分比，要注意其实这三种单位都是相对单位.</div><div class="line">1、像素</div><div class="line"></div><div class="line">像素为什么是相对单位呢？因为像素指的是显示器上的小点（CSS规范中假设“90像素=1英寸”）。实际情况是浏览器会使用显示器的实际像素值有关，在目前大多数的设计者都倾向于使用像素（px）作为单位。</div><div class="line"></div><div class="line">2、em</div><div class="line"></div><div class="line">就是本元素给定字体的 font-size 值，如果元素的 font-size 为 14px ，那么 1em = 14px；如果 font-size 为 18px，那么 1em = 18px。如下代码：</div><div class="line">p&#123;font-size:12px;text-indent:2em;&#125;</div><div class="line">上面代码就是可以实现段落首行缩进 24px（也就是两个字体大小的距离）。</div><div class="line"></div><div class="line">下面注意一个特殊情况：</div><div class="line">但当给 font-size 设置单位为 em 时，此时计算的标准以 p 的父元素的 font-size 为基础。如下代码：</div><div class="line"></div><div class="line">html:</div><div class="line">&lt;p&gt;以这个&lt;span&gt;例子&lt;/span&gt;为例。&lt;/p&gt;</div><div class="line"></div><div class="line">css:</div><div class="line">p&#123;font-size:14px&#125;</div><div class="line">span&#123;font-size:0.8em;&#125;</div><div class="line">结果 span 中的字体“例子”字体大小就为 11.2px（14 * 0.8 = 11.2px）</div><div class="line">老子的字体大小是14px,儿子的1em就是14px,没错,这很css.</div><div class="line"></div><div class="line">3、百分比</div><div class="line"></div><div class="line">p&#123;font-size:12px;line-height:130%&#125;</div><div class="line">设置行高（行间距）为字体的130%（12 * 1.3 = 15.6px）。</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<blockquote>
-<p><strong>结束语:</strong><br>持续挖坑中…</p>
-</blockquote>
-
+        <blockquote>
+<p>前言: 看了几天HTML标签和CSS布局,我狭义的认为他们就是iOS里面的视图控件了.而且布局相对于iOS要简单一点,虽然我大iOS有AutoLayout,但是UIScrollView之类的控件写起来还是要相对复杂一点的.各有利弊,以后再边学边比较吧.(以上纯属个人看法)<br>
+        
+          <a class="article-more-a" href="/2017/08/30/css语法部分/#more">more >></a>
+        
       
 
       
@@ -540,6 +318,17 @@ fixed: 表示固定定位,与absolute定位类型类似,但它的相对移动的
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color4">CSS</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -577,137 +366,34 @@ fixed: 表示固定定位,与absolute定位类型类似,但它的相对移动的
     <article id="post-web前端学习第一课,HTML语法" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/30/web前端学习第一课,HTML语法/">web前端学习第一课,HTML语法</a>
+    </h1>
+  
+
+        
+        <a href="/2017/08/30/web前端学习第一课,HTML语法/" class="archive-article-date">
+  	<time datetime="2017-08-30T01:38:18.000Z" itemprop="datePublished">2017-08-30</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <p># </p>
-<p>##前言: </p>
+        <p>##前言: </p>
 <blockquote>
-<p>在移动大前端的局势下,原生应用更新迭代的速度越来越快,iOS热更新乏力,ReactNative,Weex这些框架日趋成熟,大有一统三端的气势.我们作为iOS开发者,为了适应互联网生态环境,就必须不断的学习进步.最近公司项目集成了Weex,如果不懂Web前端的一些代码机制,加之Weex文档不太健全,我发现很难跟前端小伙伴对接(同事跟你装逼的时候,你如果是一脸懵逼的表情,那你就输了).所以我便励志学习Web前端知识,从HTML + CSS 到JS,再到当下热门的Vue,我也会不断的开坑,填坑,那今天就放上我的HTML语法学习笔记,欢迎有同样兴趣的小伙伴一起交流学习.</p>
-</blockquote>
-<ul>
-<li><p>1 HTML的注释 <!--注释文字 -->   </p>
-</li>
-<li><p>2 标签</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">标签的语法:</div><div class="line">标签分为开始标签和结束标签.结束标签比开始标签多了一个&quot;/&quot;</div><div class="line">我们对&lt;em&gt;、&lt;strong&gt;、&lt;span&gt;这三个标签进行一下总结： </div><div class="line">&lt;em&gt;和&lt;strong&gt;标签是为了强调一段话中的关键字时使用，它们的语义是强调。</div><div class="line">&lt;span&gt;标签是没有语义的，它的作用就是为了设置单独的样式用的</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<ul>
-<li><p>3 认识html文件基本结构</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">&lt;html&gt;</div><div class="line">        &lt;head&gt;...&lt;/head&gt;</div><div class="line">        &lt;body&gt;...&lt;/body&gt;</div><div class="line">    &lt;/html&gt;</div></pre></td></tr></table></figure>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"> 代码讲解：</div><div class="line">1. &lt;html&gt;&lt;/html&gt;称为根标签，所有的网页标签都在&lt;html&gt;&lt;/html&gt;中。</div><div class="line">2. &lt;head&gt; 标签用于定义文档的头部，它是所有头部元素的容器。头部元素有</div><div class="line">   &lt;title&gt;、&lt;script&gt;、 &lt;style&gt;、&lt;link&gt;、 &lt;meta&gt;等标签</div><div class="line">3. 在&lt;body&gt;和&lt;/body&gt;标签之间的内容是网页的主要内容，如&lt;h1&gt;、&lt;p&gt;、&lt;a&gt;、&lt;img&gt;</div><div class="line">   等网页内容标签，在这里的标签中的内容会在浏览器中显示出来。</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<ul>
-<li><p>4 head标签</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">head</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">title</span>&gt;</span>...<span class="tag">&lt;/<span class="name">title</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">meta</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">link</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">style</span>&gt;</span><span class="undefined">...</span><span class="tag">&lt;/<span class="name">style</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">script</span>&gt;</span><span class="undefined">...</span><span class="tag">&lt;/<span class="name">script</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">head</span>&gt;</span></div><div class="line"><span class="tag">&lt;<span class="name">title</span>&gt;</span>标签：在<span class="tag">&lt;<span class="name">title</span>&gt;</span>和<span class="tag">&lt;/<span class="name">title</span>&gt;</span>标签之间的文字内容是网页的标题信息，它会出现在</div><div class="line"> 浏览器的标题栏中。网页的title标签用于告诉用户和搜索引擎这个网页的主要内容是什么，</div><div class="line"> 搜索引擎可以通过网页标题，迅速的判断出网页的主题。每个</div><div class="line"> 网页的内容都是不同的，每个网页都应该有一个独一无二的title。</div></pre></td></tr></table></figure>
-</li>
-<li><p>5 body标签(网页上显示的内容)</p>
-</li>
-<li><p>6 p标签</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt;p&gt;段落文本&lt;/p&gt;</div><div class="line">注意一段文字一个&lt;p&gt;标签，如在一篇新闻文章中有3段文字，就要把这3个段落分别放到3个</div><div class="line">&lt;p&gt;标签中。</div></pre></td></tr></table></figure>
-</li>
-<li><p>7 hx标签</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">用过markdown语法的都知道,&lt;hx&gt;标签用来制作文章的标题.h1,h2,h3,h4,h5...标题</div><div class="line">文字的字号按照从大到小的顺序排列.</div></pre></td></tr></table></figure>
-</li>
-<li><p>6 长文本的引用</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">    <span class="tag">&lt;<span class="name">blockquote</span>&gt;</span>长文本的引用: 如想在我的文章中引用李白《关山月》中的诗句，因为引用文本</div><div class="line">比较长，所以使用<span class="tag">&lt;/<span class="name">blockquote</span>&gt;</span> </div><div class="line">    <span class="tag">&lt;<span class="name">blockquote</span>&gt;</span>明月出天山，苍茫云海间。长风几万里，吹度玉门关。汉下白登道，胡窥青海湾。</div><div class="line">    由来征战地，不见有人还。 戍客望边色，思归多苦颜。高楼当此夜，叹息未应闲。</div><div class="line">   <span class="tag">&lt;/<span class="name">blockquote</span>&gt;</span></div></pre></td></tr></table></figure>
-</li>
-<li><p>7 br标签分行显示文本</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">怎么可以让每一句诗词后面加入一个折行呢？那就可以用到&lt;br /&gt;标签了，在需要加回车换行</div><div class="line">的地方加入&lt;br /&gt;，&lt;br /&gt;标签作用相当于word文档中的回车。(html4.01版本写法是</div><div class="line">&quot; &lt;br&gt; &quot;)</div><div class="line"></div><div class="line">注意：在 html 代码中输入回车、空格都是没有作用的。在html文本中想输入回车换行，就必</div><div class="line">须输入&lt;br /&gt;。</div><div class="line">而 &amp;nbsp 代表空格符.</div></pre></td></tr></table></figure>
-</li>
-<li><p>8 hr 分割线(添加水平横线,就是一条分割线,hr是一个空标签,貌似没什么卵用)    </p>
-</li>
-<li><p>9 address标签,为网页加入地址信息</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">&lt;address&gt;联系地址信息&lt;/address&gt;</div><div class="line">例如: &lt;address&gt;文档编写：lilian 北京市西城区德外大街10号&lt;/address&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>10 code标签加入代码</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">其实这些常识性的东西我都不想记的,但是为了方便以后用到的时候查阅,忍了.</div><div class="line">代码:</div><div class="line">&lt;code&gt;var i=i+300;&lt;/code&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>11 使用pre标签加入大段代码</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;pre&gt;</div><div class="line">var message=&quot;欢迎&quot;;</div><div class="line">for(var i=1;i&lt;=10;i++)</div><div class="line">&#123;</div><div class="line">    alert(message);</div><div class="line">&#125;</div><div class="line">&lt;/pre&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>12 使用ul,添加信息列表</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;ul&gt;</div><div class="line">  &lt;li&gt;精彩少年&lt;/li&gt;</div><div class="line">  &lt;li&gt;美丽突然出现&lt;/li&gt;</div><div class="line">  &lt;li&gt;触动心灵的旋律&lt;/li&gt;</div><div class="line">&lt;/ul&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>13 使用ol来制作有序列表的展示</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line">&lt;ol&gt;</div><div class="line">   &lt;li&gt;前端开发面试心法 &lt;/li&gt;</div><div class="line">   &lt;li&gt;零基础学习html&lt;/li&gt;</div><div class="line">   &lt;li&gt;JavaScript全攻略&lt;/li&gt;</div><div class="line">&lt;/ol&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>14 认识div在排版中的作用</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">  在网页制作过程过中，可以把一些独立的逻辑部分划分出来，放在一个div标签中，这个&lt;div&gt;</div><div class="line">标签的作用就相当于一个容器。语法：&lt; div&gt;…&lt; /div&gt;</div><div class="line">  确定逻辑部分：</div><div class="line">什么是逻辑部分？它是页面上相互关联的一组元素。如网页中的独立的栏目版块，就是一个典型的</div><div class="line">逻辑部分。如下图所示：图中用红色边框标出的部分就是一个逻辑部分，就可以使用&lt;div&gt;标签作</div><div class="line">为容器。</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-47c0d6a2fe774225.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/480" alt="14954178137684.jpg"></p>
-<ul>
-<li><p>15 给div命名,使逻辑更加清晰</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line">在上一小节中，我们把一些标签放进&lt;div&gt;里，划分出一个独立的逻辑部分。为了使逻辑更加清</div><div class="line">晰，我们可以为这一个独立的逻辑部分设置一个名称，用id属性来为&lt;div&gt;提供唯一的名称，这</div><div class="line">个就像我们每个人都有一个身份证号，这个身份证号是唯一标识我们的身份的，也是必须唯一的。</div><div class="line">语法: &lt;div  id=&quot;版块名称&quot;&gt;…&lt;/div&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>16 table标签,网页上的表格<br>  太长了,很基础,懒得写,直接贴连接了 <a href="http://www.imooc.com/code/292" target="_blank" rel="external">慕课网</a></p>
-</li>
-<li><p>17 为表格添加css边框 </p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">&lt; style type=&quot;text/css&quot;&gt;</div><div class="line">table tr td,th&#123;border:1px solid #000;&#125;</div><div class="line">&lt; /style&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>18 为表格添加标题和摘要</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;table summary = &quot;2012年到2013年库存记录&quot;&gt;</div><div class="line">    &lt;caption&gt;我是标题&lt;/caption&gt;</div><div class="line">    &lt;tr&gt;</div><div class="line">          &lt;td&gt;...&lt;/td&gt;</div><div class="line">          &lt;td&gt;...&lt;/td&gt;</div><div class="line">     &lt;/tr&gt; </div><div class="line">&lt;/table&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>19 使用a标签链接到另一个页面</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;a  href=&quot;http://www.imooc.com&quot;  title=&quot;点击进入慕课网&quot;&gt;click here!&lt;/a&gt; </div><div class="line"> &lt;a  href=&quot;http://www.imooc.com&quot;  title=&quot;点击进入慕课网&quot;&gt;click here!&lt;/a&gt;</div><div class="line">上面例子作用是单击click here!文字，网页链接到http://www.imooc.com这个网页。</div><div class="line">title属性的作用，鼠标滑过链接文字时会显示这个属性的文本内容。这个属性在实际网页开发中</div><div class="line">作用很大，主要方便搜索引擎了解链接地址的内容（语义化更友好)</div><div class="line">    ```  </div><div class="line">* 20 在新建浏览器窗口中打开链接</div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><a>标签在默认情况下，链接的网页是在当前浏览器窗口中打开，有时我们需要在新的浏览器窗口<br>中打开.<br>  <a href="目标网址" target="_blank">click here!</a><br>    <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">* 21 插入图片标签</div></pre></td></tr></table></figure></a></p>
-<pre><code>语法: ![](图片地址)
-1、src：标识图像的位置；
-2、alt：指定图像的描述性文本，当图像不可见时（下载不成功时），可看到该属性指定的文本；
-3、title：提供在图像可见时对图像的描述(鼠标滑过图片时显示的文本)；
-4、图像可以是GIF，PNG，JPEG格式的图像文件。
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">* 22 使用表单标签,与用户交互</div><div class="line"></div><div class="line">    ```HTML</div><div class="line">    网站交互的form表单,可以把浏览者输出的数据传送到服务器端</div><div class="line">    语法: &lt; form method = &quot;post/get&quot; action = &quot;save.php&quot;&gt; &lt; /form&gt;</div><div class="line">    1.&lt;form&gt; ：&lt;form&gt;标签是成对出现的，以&lt;form&gt;开始，以&lt;/form&gt;结束。</div><div class="line">    2.action ：浏览者输入的数据被传送到的地方,比如一个PHP页面(save.php)。</div><div class="line">    3.method ：数据传送的方式（get/post）。</div><div class="line">    代码如下:</div><div class="line">    &lt;form    method=&quot;post&quot;   action=&quot;save.php&quot;&gt;</div><div class="line">        &lt;label for=&quot;username&quot;&gt;用户名:&lt;/label&gt;</div><div class="line">        &lt;input type=&quot;text&quot; name=&quot;username&quot; /&gt;</div><div class="line">        &lt;label for=&quot;pass&quot;&gt;密码:&lt;/label&gt;</div><div class="line">        &lt;input type=&quot;password&quot; name=&quot;pass&quot; /&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
-</code></pre><ul>
-<li><p>23 文本输入框,密码输入框 </p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line">&lt;form&gt;</div><div class="line">        &lt;input type = &quot;text/password&quot; name = &quot;名称&quot; value = &quot;文本&quot;/&gt;</div><div class="line">&lt;/form&gt;</div><div class="line">type: 当type = &quot;text&quot;时,输入框为文本输入框,当type = &quot;password&quot;时,输入框为密码</div><div class="line">输入框.</div><div class="line">name: 为文本框命名，以备后台程序ASP 、PHP使用。</div><div class="line">value: 为输入框设置默认值.(一般起到提示作用)</div></pre></td></tr></table></figure>
-</li>
-<li><p>24 文本域,支持多行文字输入</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">当用户需要在表单中输入大段文字时，需要用到文本输入域。</div><div class="line">语法:</div><div class="line">&lt;textarea rows = &quot;行数&quot; cols = &quot;列数&quot;&gt;</div><div class="line">这里可以输入默认值</div><div class="line">&lt;/textarea&gt;</div><div class="line">举例:</div><div class="line">&lt;form method = &quot;get&quot; action = &quot;save.php&quot;&gt;</div><div class="line">    &lt;label&gt;联系我们&lt;/label&gt;</div><div class="line">    &lt;textarea cols = &quot;50&quot; rows = &quot;10&quot;&gt;</div><div class="line">    这里输入内容</div><div class="line">    &lt;/textarea&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>25 使用单选框和复选框让用户选择</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line">在使用表单设计调查表时，为了减少用户的操作，使用选择框是一个好主意，html有两种选择框,</div><div class="line">单选框和复选框,单选框只能选择一项,复选框可以选择任意多项.</div><div class="line">语法:</div><div class="line">&lt;input type = &quot;radio/checkbox&quot; value = &quot;值&quot; name = &quot;名称&quot; </div><div class="line">checked = &quot;checked&quot;/&gt;</div><div class="line">1、type:</div><div class="line">   当 type=&quot;radio&quot; 时，控件为单选框</div><div class="line">   当 type=&quot;checkbox&quot; 时，控件为复选框</div><div class="line">2、value：提交数据到服务器的值（后台程序PHP使用）</div><div class="line">3、name：为控件命名，以备后台程序 ASP、PHP 使用</div><div class="line">4、checked：当设置 checked=&quot;checked&quot; 时，该选项被默认选中</div><div class="line">如下面代码：</div></pre></td></tr></table></figure>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-7a623b6daac1f503.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14950723890155.jpg"></p>
-</li>
-</ul>
-<p>显示结果:</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-296ac8f36a67e68e.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/550" alt="14950724063290.jpg"></p>
-<p>注意: 同一组单选按钮,name取值一定要一致</p>
-<ul>
-<li><p>26 下拉列表:</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt; <span class="attr">form</span> <span class="attr">action</span>=<span class="string">"save.php"</span> <span class="attr">method</span>=<span class="string">"post"</span> &gt;</span></div><div class="line">    <span class="tag">&lt; <span class="attr">label</span>&gt;</span>爱好:<span class="tag">&lt; /<span class="attr">label</span>&gt;</span></div><div class="line">    <span class="tag">&lt; <span class="attr">select</span>&gt;</span></div><div class="line">      <span class="tag">&lt; <span class="attr">option</span> <span class="attr">value</span>=<span class="string">"看书"</span>&gt;</span>看书<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">      <span class="tag">&lt; <span class="attr">option</span> <span class="attr">value</span>=<span class="string">"旅游"</span>&gt;</span>旅游<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">      <span class="tag">&lt; <span class="attr">option</span> <span class="attr">value</span>=<span class="string">"运动"</span>&gt;</span>运动<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">      <span class="tag">&lt; <span class="attr">option</span> <span class="attr">value</span>=<span class="string">"购物"</span>&gt;</span>购物<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">    <span class="tag">&lt; /<span class="attr">select</span>&gt;</span></div><div class="line"><span class="tag">&lt; /<span class="attr">form</span>&gt;</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-f73a712091a8cec1.jpg?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240" alt="14950745042054.jpg"></p>
-<p>设置 selected = “selected” 该选项默认选中    </p>
-<ul>
-<li><p>27 使用下拉列表框进行多选</p>
-  <figure class="highlight html"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line">在select标签中设置 multiple = "multiple" 可    以实现多选功能,在windows操作</div><div class="line">系统下,进行多选时按下Ctrl键同事进行单击(Mac下使用Command + 单击),可以选择多个</div><div class="line">选项.</div><div class="line"><span class="tag">&lt;<span class="name">form</span> <span class="attr">name</span> = <span class="string">"iForm"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">label</span>&gt;</span>爱好: <span class="tag">&lt;/<span class="name">label</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">select</span> <span class="attr">multiple</span> = <span class="string">"multiple"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span> = <span class="string">"读书"</span>&gt;</span>读书<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span> = <span class="string">"旅游"</span>&gt;</span>读书<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">option</span> <span class="attr">value</span> = <span class="string">"购物"</span>&gt;</span>读书<span class="tag">&lt;/<span class="name">option</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">select</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">form</span>&gt;</span></div></pre></td></tr></table></figure>
-</li>
-</ul>
-<ul>
-<li><p>28 使用提交按钮,提交数据</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">&lt;input type = &quot;submit&quot; value = &quot;提交&quot;&gt;</div><div class="line">type：只有当type值设置为submit时，按钮才有提交作用</div><div class="line">value：按钮上显示的文字 </div><div class="line">&lt;form method = &quot;get&quot; action = &quot;save.php&quot;&gt;</div><div class="line">    &lt;label for = &quot;myName&quot;&gt; 姓名 &lt;/label&gt;</div><div class="line">    &lt;input type = &quot;text&quot; value = &quot;&quot; name = &quot;myName&quot;/&gt;</div><div class="line">    &lt;input type = submit value = &quot;提交&quot; name = &quot;submitBtn&quot; /&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>29 使用重置按钮,重置表单信息</p>
-  <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line">当用户需要重置表单信息到初始时的状态时，比如用户输入“用户名”后，发现书写有误，可以使</div><div class="line">用重置按钮使输入框恢复到初始状态。只需要把type设置为&quot;reset&quot;就可以。</div><div class="line">&lt;input type = &quot;reset&quot; value = &quot;重置&quot;&gt;</div><div class="line">举栗:</div><div class="line">&lt;form method = &quot;get&quot; action = &quot;save.php&quot;&gt;</div><div class="line">    &lt;label for = &quot;myName&quot;&gt; 姓名 &lt;/label&gt;</div><div class="line">    &lt;input type = &quot;text&quot; value = &quot;&quot; name = &quot;myName&quot; /&gt;</div><div class="line">    &lt;input type = &quot;reset&quot; value = &quot;重置&quot; name = &quot;resetBtn&quot; /&gt;</div><div class="line">&lt;/form&gt;</div></pre></td></tr></table></figure>
-</li>
-<li><p>30 form表单中的label标签 </p>
-<pre><code>label标签不会向用户呈现任何特殊效果,它的作用是为鼠标用户改进了可用性.如果你在label
-标签内点击文本,就会触发此控件.当用户点击label标签是,浏览器就会自动将焦点转到和标签
-相关的表单控件上.
-注意: 标签的for属性中的值应当与相关控件的id属性值相同(说白了,这就是一个绑定的过程,
-label关联了哪个元素,你点击label文字,哪个元素就会响应)
-语法: &lt; label for = &quot;控件id名称&quot;&gt;
-注意: 标签的for属性中的值应当与相关控件的id属性值相同
-</code></pre><blockquote>
-<p><strong>末语</strong>:<br>这些教材都是从慕课网上找到的,有的内容比较啰嗦的我直接删掉了,毕竟学技术没那么多时间看废话.下一篇奉上CSS语法部分.</p>
-</blockquote>
-</li>
-</ul>
-
+<p>在移动大前端的局势下,原生应用更新迭代的速度越来越快,iOS热更新乏力,ReactNative,Weex这些框架日趋成熟,大有一统三端的气势.我们作为iOS开发者,为了适应互联网生态环境,就必须不断的学习进步.最近公司项目集成了Weex,如果不懂Web前端的一些代码机制,加之Weex文档不太健全,我发现很难跟前端小伙伴对接(同事跟你装逼的时候,你如果是一脸懵逼的表情,那你就输了).所以我便励志学习Web前端知识,从HTML + CSS 到JS,再到当下热门的Vue,我也会不断的开坑,填坑,那今天就放上我的HTML语法学习笔记,欢迎有同样兴趣的小伙伴一起交流学习.<br>
+        
+          <a class="article-more-a" href="/2017/08/30/web前端学习第一课,HTML语法/#more">more >></a>
+        
       
 
       
@@ -715,6 +401,17 @@ label关联了哪个元素,你点击label文字,哪个元素就会响应)
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color5">HTML</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -749,155 +446,38 @@ label关联了哪个元素,你点击label文字,哪个元素就会响应)
 
 
   
-    <article id="post-基于tableView Delegate模式实现一个listView" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p># </p>
-<p>###控件需求及故事背景:<br>listView上堆放了一条条的cell,cell的样式是不固定的,cell的个数也是不固定的,而且listView是不可以滚动的.事实上,看需求直接使用tableView也没什么不妥,但是膜11大佬<a href="https://boxueio.com/series/started-with-ui-tableview/episode/54" target="_blank" rel="external">UITableView Delegate使用模式</a>的设计场景, 加上自己正好有需求,为何不自己写一个简单的listView呢?于是乎,操起Xcode直接干吧.</p>
-<p>首先,我们需要两个数据源方法,一个告诉listView有几条cell,一个返回每个cell的样式:</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">protocol</span> <span class="title">TMListViewDataSource</span>: <span class="title">class</span> </span>&#123;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">numberOfRows</span><span class="params">(<span class="number">_</span> listView: TMListView)</span></span> -&gt; <span class="type">Int</span></div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">cellForRowAtIndex</span><span class="params">(<span class="number">_</span> listView: TMListView, index: Int)</span></span> -&gt; <span class="type">TMListViewCell</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>然后,在listView里定义一个dataSource: </p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">weak</span> <span class="keyword">var</span> dataSource: <span class="type">TMListViewDataSource</span>?</div></pre></td></tr></table></figure>
-<p>这了使用weak 是为了避免循环引用,至于为什么会引起循环引用,11在开头贴的视频里讲的很详细.</p>
-<p>开始配置cell:</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="function"><span class="keyword">func</span> <span class="title">configCell</span><span class="params">()</span></span> &#123;</div><div class="line">    <span class="keyword">if</span> <span class="keyword">let</span> dataSource = dataSource &#123;</div><div class="line">    <span class="comment">//获取cell个数,理论上,我应该把count包装成Observable,以便在后续工作中,实现根据cell个数修改listView样式的操作.</span></div><div class="line">        <span class="keyword">let</span> <span class="built_in">count</span> = dataSource.numberOfRows(<span class="keyword">self</span>)</div><div class="line">        <span class="comment">//这里根据cell的个数计算listView的height</span></div><div class="line">        <span class="keyword">if</span> <span class="built_in">count</span> &lt; <span class="number">3</span> &#123;</div><div class="line">        <span class="comment">//这个计算比例的过程类似: 108.5/667 * 屏高</span></div><div class="line">            <span class="keyword">self</span>.height = <span class="type">Rect</span>.verticalScale(<span class="number">108.5</span>) * <span class="type">CGFloat</span>(<span class="built_in">count</span>)</div><div class="line">        &#125;</div><div class="line">        <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">self</span>.height = <span class="type">Rect</span>.verticalScale(<span class="number">108.5</span>) * <span class="number">3.0</span></div><div class="line">        &#125;</div><div class="line">        <span class="comment">//获取每一条cell,并添加到cell数组里</span></div><div class="line">        <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">0</span> ..&lt; <span class="built_in">count</span> &#123;</div><div class="line">            <span class="keyword">let</span> cell = dataSource.cellForRowAtIndex(<span class="keyword">self</span>, index: i)</div><div class="line">            cellCaches.append(cell)</div><div class="line">        &#125;</div><div class="line">        <span class="comment">//把每一条cell添加到listView上</span></div><div class="line">        cellCaches</div><div class="line">            .enumerated()</div><div class="line">            .<span class="built_in">filter</span> &#123; $<span class="number">0</span>.offset &lt; <span class="number">3</span> &#125;</div><div class="line">            .forEach &#123; index, cell <span class="keyword">in</span></div><div class="line">                <span class="keyword">self</span>.addSubview(cell)</div><div class="line">            &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>接下来,就可以去设置listView的代理了,并且让listView的代理实现 上面的两个数据源方法:</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//在viewDidLoad方法中设置代理</span></div><div class="line">   <span class="keyword">self</span>.<span class="type">ListView</span>.dataSource = <span class="keyword">self</span></div><div class="line">   <span class="keyword">self</span>.<span class="type">ListView</span>.configCell()</div></pre></td></tr></table></figure>
-<p>实现数据源方法:</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">extension</span> <span class="title">TMFirstPageController</span>: <span class="title">TMListViewDataSource</span> </span>&#123;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">cellForRowAtIndex</span><span class="params">(<span class="number">_</span> listView: TMListView, index: Int)</span></span> -&gt; <span class="type">TMListViewCell</span> &#123;</div><div class="line">        <span class="keyword">let</span> cell = <span class="type">Bundle</span>.main.loadNibNamed(<span class="string">"TMListViewCell"</span>, owner: <span class="keyword">self</span>, options: <span class="literal">nil</span>)?.last <span class="keyword">as</span>! <span class="type">TMListViewCell</span></div><div class="line">        </div><div class="line">        <span class="keyword">let</span> cellHeight = <span class="number">108.5</span>/<span class="number">667</span> * <span class="type">Rect</span>.<span class="type">SCREENH</span></div><div class="line">        <span class="keyword">let</span> width = <span class="type">Rect</span>.<span class="type">SCREENW</span></div><div class="line">        <span class="keyword">let</span> originY = <span class="type">Rect</span>.verticalScale(<span class="number">76.5</span>) + cellHeight * <span class="type">CGFloat</span>(index)</div><div class="line">        cell.frame = <span class="type">CGRect</span>.<span class="keyword">init</span>(x: <span class="number">0</span>, y: originY, width: width, height: cellHeight)</div><div class="line">        </div><div class="line">        <span class="built_in">print</span>(cell.frame)</div><div class="line">        </div><div class="line">        <span class="keyword">return</span> cell</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">numberOfRows</span><span class="params">(<span class="number">_</span> listView: TMListView)</span></span> -&gt; <span class="type">Int</span> &#123;</div><div class="line">        <span class="keyword">return</span> <span class="number">2</span></div><div class="line">    &#125;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>故事到这里差不多该结束了,但是还有一个类似cell点击事件的代理方法:由于我的控件样式大概是这样的: </p>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-165828201e834d77.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/240" alt="D98528E654CD79FA5EB3BFCC85C3CF1A.png"><br>所以我在代理方法里面分别为go ,立即兑换两个按钮各添加了一个点击代理方法.<br><figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"> <span class="class"><span class="keyword">protocol</span> <span class="title">TMListViewDelegate</span>: <span class="title">class</span> </span>&#123;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">didSelectedGoAtIndex</span><span class="params">(<span class="number">_</span> listView: TMListView, index: Int)</span></span></div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">didSelectedExchangeAtIndex</span><span class="params">(<span class="number">_</span> listView: TMListView, index: Int)</span></span></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
-<p>这个跟数据源方法的实现几乎一毛一样.不同的是要在cell里定义两个点击事件,通过clouser把事件回传给代理.</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">typealias</span> btnOfListViewCellTapped = () -&gt; <span class="type">Void</span></div><div class="line"></div><div class="line">    <span class="keyword">var</span> jumpToOtherApp: btnOfListViewCellTapped?</div><div class="line">    <span class="keyword">var</span> immediatelyredeem: btnOfListViewCellTapped?</div><div class="line">    </div><div class="line">    <span class="meta">@IBAction</span> <span class="function"><span class="keyword">func</span> <span class="title">jumpToOtherApp</span><span class="params">(<span class="number">_</span> sender: UIButton)</span></span> &#123;</div><div class="line">        <span class="keyword">if</span> <span class="keyword">let</span> clouser = jumpToOtherApp &#123;</div><div class="line">            clouser()</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">    </div><div class="line">    <span class="meta">@IBAction</span> <span class="function"><span class="keyword">func</span> <span class="title">immediatelyredeem</span><span class="params">(<span class="number">_</span> sender: UIButton)</span></span> &#123;</div><div class="line">        <span class="keyword">if</span> <span class="keyword">let</span> clouser = immediatelyredeem &#123;</div><div class="line">            clouser()</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
-<p>然后再回到configCell方法里:</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line">cellCaches</div><div class="line">    .enumerated()</div><div class="line">    .<span class="built_in">filter</span> &#123; $<span class="number">0</span>.offset &lt; <span class="number">3</span> &#125;</div><div class="line">    .forEach &#123; index, cell <span class="keyword">in</span></div><div class="line">        <span class="keyword">self</span>.addSubview(cell)</div><div class="line">        <span class="keyword">if</span> <span class="keyword">let</span> delegate = delegate &#123;</div><div class="line">            cell.jumpToOtherApp = &#123;</div><div class="line">                delegate.didSelectedGoAtIndex(<span class="keyword">self</span>, index: index)</div><div class="line">            &#125;</div><div class="line">            cell.immediatelyredeem = &#123;</div><div class="line">                delegate.didSelectedExchangeAtIndex(<span class="keyword">self</span>, index: index)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
-<p>最后套路一样,在vc里实现这两个代理方法就OK了.</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">didSelectedGoAtIndex</span><span class="params">(<span class="number">_</span> listView: TMListView, index: Int)</span></span> &#123;</div><div class="line">    <span class="built_in">print</span>(<span class="string">"点击了go,<span class="subst">\(index)</span>"</span>)</div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">didSelectedExchangeAtIndex</span><span class="params">(<span class="number">_</span> listView: TMListView, index: Int)</span></span> &#123;</div><div class="line">    <span class="built_in">print</span>(<span class="string">"点击了兑换,<span class="subst">\(index)</span>"</span>)</div><div class="line">    <span class="keyword">self</span>.alert(message: <span class="string">"兑换抵扣券后，将不能退换回团豆，您确定兑换吗？"</span>, title: <span class="string">"温馨提示"</span>, <span class="keyword">left</span>: <span class="string">"取消"</span>, <span class="keyword">right</span>: <span class="string">"兑换"</span>, leftCallBack: <span class="literal">nil</span>) &#123; (action) <span class="keyword">in</span></div><div class="line">        <span class="built_in">print</span>(<span class="string">"已经兑换了"</span>)</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>代码很简单,也许你会觉得我这样写一个数据源代理,还不如直接定义几个属性,或者回传几个clouser方便,那你一定是还没遇到变态的产品.如果你那样做的话,你的控件功能越复杂(想想一下,加入header,footer,分割线啊什么鬼的)你vc里的代码看起来就会越臃肿.</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/08/30/基于tableView Delegate模式实现一个listView/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
-    <article id="post-实现类似QQ的全屏幕侧滑返回效果" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>#<br>系统navigationController的view自带的侧滑只支持左侧边缘滑动返回,这跟单手操作完全不沾边儿,纯属扯淡。但是,我发现qq的滑动返回是可以全屏操作的,这就比较舒服了。那么，就一起动手实现这个功能吧。<br>首先，实现原理是这样的：<br>我们给导航控制器添加一个全屏的滑动手势。用这个滑动手势，来调用系统实现的滑动返回功能，同时不要忘了禁用掉系统的滑动返回手势。</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">viewDidLoad</span><span class="params">()</span></span> &#123;</div><div class="line">    <span class="keyword">super</span>.viewDidLoad()</div><div class="line"></div><div class="line">    <span class="comment">//view上添加一个侧滑的手势</span></div><div class="line">    <span class="keyword">let</span> target = <span class="keyword">self</span>.navigationController?.interactivePopGestureRecognizer!.delegate</div><div class="line">    <span class="keyword">let</span> pan = <span class="type">UIPanGestureRecognizer</span>(target:target,</div><div class="line">                                     action:<span class="type">Selector</span>((<span class="string">"handleNavigationTransition:"</span>)))</div><div class="line">    pan.delegate = <span class="keyword">self</span></div><div class="line">    <span class="keyword">self</span>.view.addGestureRecognizer(pan)</div><div class="line">    <span class="comment">//禁用系统原先的侧滑返回功能</span></div><div class="line">    <span class="keyword">self</span>.navigationController?.interactivePopGestureRecognizer!.isEnabled = <span class="literal">false</span></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>控制器遵守UIGestureRecognizerDelegate 代理，并实现下面的方法：</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gestureRecognizer</span><span class="params">(<span class="number">_</span> gestureRecognizer: UIGestureRecognizer,</span></span></div><div class="line"><span class="function"><span class="params">                       shouldRecognizeSimultaneouslyWith otherGestureRecognizer:</span></span></div><div class="line"><span class="function"><span class="params">    UIGestureRecognizer)</span></span> -&gt; <span class="type">Bool</span> &#123;</div><div class="line">        <span class="comment">//这里，只有非根控制器才可以侧滑，根控制器禁掉</span></div><div class="line">        <span class="keyword">if</span> <span class="keyword">self</span>.childViewControllers.<span class="built_in">count</span> == <span class="number">1</span> &#123;</div><div class="line">            <span class="keyword">return</span> <span class="literal">false</span></div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="literal">true</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这样就实现了全屏幕滑动侧滑的功能了。</p>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-b03d57dc67d9341b.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/240" alt="3DA0515A39674E27A0E256D6D4602697.png"></p>
-<p><strong>但是呢，我把它写在我的带collectionView的控制器里发现，我在滑动collectionView的同时，还是可以侧滑的，这样的话，就容易造成不好的体验，用户滑动着collectionView有可能突然就返回到上一个页面了。</strong></p>
-<p>需求大概就是我在滑动本身collectionView的时候禁止掉侧滑返回的功能。思路大概就是： 在scrollView滚动的时候代理方法返回false就可以了。那么如何判断scrollView是否正在滚动呢？一个简单粗暴的方法：</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> isScrolling: <span class="type">Bool</span> = <span class="literal">false</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">scrollViewDidScroll</span><span class="params">(<span class="number">_</span> scrollView: UIScrollView)</span></span> &#123;</div><div class="line">    </div><div class="line">    <span class="keyword">self</span>.isScrolling = <span class="literal">true</span></div><div class="line">&#125;</div><div class="line"></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">scrollViewDidEndScrollingAnimation</span><span class="params">(<span class="number">_</span> scrollView: UIScrollView)</span></span> &#123;</div><div class="line">    <span class="keyword">self</span>.isScrolling = <span class="literal">false</span></div><div class="line">&#125;</div><div class="line"><span class="comment">//最后代理方法改成这样</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">gestureRecognizer</span><span class="params">(<span class="number">_</span> gestureRecognizer: UIGestureRecognizer,</span></span></div><div class="line"><span class="function"><span class="params">                       shouldRecognizeSimultaneouslyWith otherGestureRecognizer:</span></span></div><div class="line"><span class="function"><span class="params">    UIGestureRecognizer)</span></span> -&gt; <span class="type">Bool</span> &#123;</div><div class="line">    </div><div class="line">    <span class="keyword">if</span> <span class="keyword">self</span>.isScrolling == <span class="literal">true</span> &#123;</div><div class="line"></div><div class="line">        <span class="keyword">return</span> <span class="literal">false</span></div><div class="line">    &#125;</div><div class="line">    <span class="keyword">else</span> &#123;</div><div class="line">        <span class="keyword">if</span> <span class="keyword">self</span>.childViewControllers.<span class="built_in">count</span> == <span class="number">1</span> &#123;</div><div class="line">            <span class="keyword">return</span> <span class="literal">false</span></div><div class="line">        &#125;</div><div class="line">        <span class="keyword">return</span> <span class="literal">true</span></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>OK，这样，在你滑动collectionView的时候，就不能再侧滑了。完美解决，跟QQ的滑动侧滑效果一致。</p>
-
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/08/30/实现类似QQ的全屏幕侧滑返回效果/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
     <article id="post-CALayer动画之一CAGradientLayer，让渐变色动起来" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/30/CALayer动画之一CAGradientLayer，让渐变色动起来/">CALayer动画之一CAGradientLayer，让渐变色动起来</a>
+    </h1>
+  
+
+        
+        <a href="/2017/08/30/CALayer动画之一CAGradientLayer，让渐变色动起来/" class="archive-article-date">
+  	<time datetime="2017-08-30T01:33:51.000Z" itemprop="datePublished">2017-08-30</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <p>#CALayer动画之一CAGradientLayer，让渐变色动起来</p>
-<p>####最近在搞这样一个动画：</p>
+        <p>####最近在搞这样一个动画：</p>
 <p><img src="http://upload-images.jianshu.io/upload_images/1526313-8f0136e72143801b.gif?imageMogr2/auto-orient/strip" alt="动效.gif"></p>
 <blockquote>
-<p>介绍：<br>最近项目需求做了这样一个动效，其中涉及到的技术点做个总结，好留个笔记。此篇文章旨在实现卡通人物的眼镜和脖子上戴的金牌上面那一道白光闪过的效果。至于动效上其他关于CAShapeLayer + UIBezierPath 画渐变色圆和线的动画放在下一章去谈。</p>
-</blockquote>
-<p>可能你感觉，这不就是一个简单的位移动画吗，给白光图片做一个位移效果不就好了吗，那实现起来简直low逼透了。位置把控不好先不谈，白光闪过去的丝滑效果也远不及使用渐变色CAGradientLayer。用渐变色来实现这个效果的灵感来源于  iOS_Animations_by_Tutorials 这本书。</p>
-<p>开始代码之前，先来了解下CAGradientLayer:<br> <figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line">CAGradientLayer的属性</div><div class="line"></div><div class="line">colors: 存放颜色的数组。</div><div class="line">locations: 对应数组中颜色的位置。</div><div class="line">startPoint, endPoint: 渐变色的起始位置和结束位置。</div><div class="line">type: 渐变的类型，可以是颜色像素均匀变化，只有一个默认选择axial</div></pre></td></tr></table></figure></p>
-<p>好了，上代码</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//首先自定义一个UIImageView</span></div><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">LeftGlassesImage</span>: <span class="title">UIImageView</span> </span>&#123;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line">//然后在LeftGlassesImage中定义一个渐变色layer实例</div><div class="line">    let gradientLayer: CAGradientLayer = &#123;</div><div class="line">        let gradientLayer = CAGradientLayer()</div><div class="line">        //渐变色起始和结束位置如果是（x: 0,y: 0.5）-&gt; (x: 1,y: 0.5)</div><div class="line">        //代表水平方向渐变，这里我设置的是让他有一个偏转角度的</div><div class="line">        // 下面有详细的关于渐变方向的图解</div><div class="line">        gradientLayer.startPoint = CGPoint(x: 0.0, y: 0.4)</div><div class="line">        gradientLayer.endPoint = CGPoint(x: 1.0, y: 0.6)</div><div class="line">        </div><div class="line">        //颜色数组，两头透明色，中间白色，这样可以凸显出白光</div><div class="line">        let colors = [</div><div class="line">            UIColor.clear.cgColor,</div><div class="line">            UIColor.white.cgColor,</div><div class="line">            UIColor.white.cgColor,</div><div class="line">            UIColor.clear.cgColor</div><div class="line">        ]</div><div class="line">        gradientLayer.colors = colors</div><div class="line">        </div><div class="line">        //初始位置是关键所在，locations的位置元素对应着colors数组</div><div class="line">        //中的颜色元素。这个location是所有的颜色点占整个渐变layer</div><div class="line">        //宽度的比例。-0.4的值代表着clearColor的X值在</div><div class="line">        // - layer.width * 0.4 这个位置。-0.39 -&gt; -0.24 说明白色区域的</div><div class="line">        //  宽度是 layer.width 的0.25倍。</div><div class="line">        let locations: [NSNumber] = [</div><div class="line">             -0.4,</div><div class="line">             -0.39,</div><div class="line">             -0.24,</div><div class="line">             -0.23</div><div class="line">        ]</div><div class="line">        gradientLayer.locations = locations</div><div class="line">        </div><div class="line">        return gradientLayer</div><div class="line">    &#125;()</div></pre></td></tr></table></figure>
-<p><img src="http://upload-images.jianshu.io/upload_images/1526313-6758d13128dfaf2c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/310" alt="渐变方向示意图.png"></p>
-<p>下面重写layoutSubviews，设置gradientLayer 的frame,并把他添加到self上。</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">layoutSubviews</span><span class="params">()</span></span> &#123;</div><div class="line">    layer.borderColor = <span class="type">UIColor</span>.green.cgColor</div><div class="line">    gradientLayer.frame = <span class="type">CGRect</span>(</div><div class="line">        x: -<span class="number">5</span>,</div><div class="line">        y: <span class="number">0</span>,</div><div class="line">        width: bounds.size.width ,</div><div class="line">        height: bounds.size.height)</div><div class="line">    </div><div class="line">    layer.addSublayer(gradientLayer)</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>剩下的就是添加动画了：</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">didMoveToWindow</span><span class="params">()</span></span> &#123;</div><div class="line">    <span class="keyword">super</span>.didMoveToWindow()</div><div class="line">    </div><div class="line">    <span class="comment">//动画的keyPath选择locations属性，说明我们要动画的对象</span></div><div class="line">    <span class="comment">//是locations数组。</span></div><div class="line">    <span class="keyword">let</span> gradientAnimation = <span class="type">CABasicAnimation</span>(keyPath: <span class="string">"locations"</span>)</div><div class="line">    <span class="comment">//有了上面对于locations的解释，想让渐变色动起来</span></div><div class="line">    <span class="comment">//我们的动画起始位置和结束位置这样设置，也并不难理解了</span></div><div class="line">    gradientAnimation.fromValue = [-<span class="number">0.8</span>,-<span class="number">0.79</span>,-<span class="number">0.64</span>,-<span class="number">0.63</span>]</div><div class="line">    gradientAnimation.toValue = [<span class="number">1.5</span>,<span class="number">1.51</span>,<span class="number">1.76</span>,<span class="number">1.77</span>]</div><div class="line">    gradientAnimation.duration = <span class="number">1.0</span></div><div class="line">    gradientAnimation.repeatCount = <span class="number">2</span></div><div class="line">    </div><div class="line">    gradientLayer.add(gradientAnimation, forKey: <span class="literal">nil</span>)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p><a href="https://github.com/15130886370/TMgradientLayer" target="_blank" rel="external">代码地址</a> ,后续会不断更新文中一些动画的实现方式。</p>
-
+<p>介绍：<br>最近项目需求做了这样一个动效，其中涉及到的技术点做个总结，好留个笔记。此篇文章旨在实现卡通人物的眼镜和脖子上戴的金牌上面那一道白光闪过的效果。至于动效上其他关于CAShapeLayer + UIBezierPath 画渐变色圆和线的动画放在下一章去谈。<br>
+        
+          <a class="article-more-a" href="/2017/08/30/CALayer动画之一CAGradientLayer，让渐变色动起来/#more">more >></a>
+        
       
 
       
@@ -905,6 +485,17 @@ label关联了哪个元素,你点击label文字,哪个元素就会响应)
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -942,25 +533,34 @@ label关联了哪个元素,你点击label文字,哪个元素就会响应)
     <article id="post-CALayer动画之二CAShapeLayer画一个带渐变色的圆弧" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
     
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/">CALayer动画之二CAShapeLayer画一个带渐变色的圆弧</a>
+    </h1>
+  
+
+        
+        <a href="/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/" class="archive-article-date">
+  	<time datetime="2017-08-24T09:14:40.000Z" itemprop="datePublished">2017-08-24</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
+    
     <div class="article-entry" itemprop="articleBody">
       
-        <h1 id="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧"><a href="#CALayer动画之二CAShapeLayer画一个带渐变色的圆弧" class="headerlink" title="CALayer动画之二CAShapeLayer画一个带渐变色的圆弧"></a>CALayer动画之二CAShapeLayer画一个带渐变色的圆弧</h1><p><img src="http://upload-images.jianshu.io/upload_images/1526313-7bb1d9cbcf0712bf.gif?imageMogr2/auto-orient/strip" alt="动效.gif"></p>
+        <p><img src="http://upload-images.jianshu.io/upload_images/1526313-7bb1d9cbcf0712bf.gif?imageMogr2/auto-orient/strip" alt="动效.gif"></p>
 <blockquote>
-<p>接上篇：<br>上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。</p>
-</blockquote>
-<p>CAShapeLayer和UIBezierPath画一条圆弧：</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//首先定义一个circle</span></div><div class="line"><span class="keyword">var</span> circle: <span class="type">CAShapeLayer</span>!</div></pre></td></tr></table></figure>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//设置path的内容</span></div><div class="line"><span class="keyword">let</span> startAngle: <span class="type">CGFloat</span> = .pi * <span class="number">0.25</span></div><div class="line"><span class="keyword">let</span> endAngle: <span class="type">CGFloat</span> = .pi * <span class="number">2</span></div><div class="line"><span class="keyword">let</span> centerX = <span class="keyword">self</span>.backCircle.width/<span class="number">2</span></div><div class="line"><span class="keyword">let</span> centerY = <span class="keyword">self</span>.backCircle.height/<span class="number">2</span></div><div class="line"><span class="keyword">let</span> center = <span class="type">CGPoint</span>(x: centerX,y: centerY)</div><div class="line"><span class="keyword">let</span> lineWidth: <span class="type">CGFloat</span> = <span class="number">16.0</span></div><div class="line"></div><div class="line">circle = <span class="type">CAShapeLayer</span>()</div><div class="line"></div><div class="line"><span class="comment">//绘制圆</span></div><div class="line"><span class="keyword">let</span> circlePath = <span class="type">UIBezierPath</span>.<span class="keyword">init</span>(arcCenter: center, radius: <span class="number">240</span>/<span class="number">2</span>, startAngle: startAngle, endAngle: endAngle, clockwise: <span class="literal">true</span>)</div><div class="line"></div><div class="line">circle.path = circlePath.cgPath</div><div class="line"><span class="comment">//中间透明</span></div><div class="line">circle.fillColor = <span class="type">UIColor</span>.clear.cgColor</div><div class="line"><span class="comment">//临时颜色，下面会用到渐变色来渲染圆环颜色</span></div><div class="line">circle.strokeColor = <span class="type">UIColor</span>.green.cgColor</div><div class="line"><span class="comment">//设置线宽</span></div><div class="line">circle.lineWidth = lineWidth</div><div class="line"><span class="comment">//设置圆环头部样式</span></div><div class="line">circle.lineCap = kCALineCapRound</div><div class="line"><span class="comment">//把自己定义的circle 添加到 背景圆环的layer上</span></div><div class="line">backCircle.layer.addSublayer(circle)</div></pre></td></tr></table></figure>
-<p>添加动画，设置CABasicAnimation的keyPath为“strokeEnd”。</p>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> circleAnimation = <span class="type">CABasicAnimation</span>(keyPath: <span class="string">"strokeEnd"</span>)</div><div class="line">circleAnimation.duration = <span class="number">2</span></div><div class="line">circleAnimation.fromValue = <span class="number">0.0</span></div><div class="line">circleAnimation.toValue = <span class="number">1.0</span></div><div class="line"><span class="comment">//动画节奏，淡出</span></div><div class="line">circleAnimation.timingFunction = <span class="type">CAMediaTimingFunction</span>(name: kCAMediaTimingFunctionEaseOut)</div><div class="line"><span class="comment">//把动画添加到layer上</span></div><div class="line">circle.add(circleAnimation, forKey: <span class="literal">nil</span>)</div></pre></td></tr></table></figure>
-<p>  下面重点来了：</p>
-<ol>
-<li>之所以能实现圆环的渐变色，并不是我们可以直接在layer上添加一个圆环形状的渐变色,而是创建一个通用的正方形渐变色区域，用我们的circle 作为这个渐变区域的mask来截取一个圆环形状的渐变色区域。</li>
-<li>为了制造圆环的渐变色效果，只创建一块渐变区域，那是不够的，因为那样画出来的圆左右方向的圆弧颜色是对称的，那样就太丑了，不符合整体渐变的要求。所以，我把这个正方形渐变区域垂直切分成两块渐变区域，左右区域的颜色顺序相反，起始和结束位置也相反,就可以实现圆环渐变的效果了。</li>
-</ol>
-<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//创建第一个gradientLayer</span></div><div class="line">    <span class="keyword">let</span> colors1 = [</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">49</span>, green: <span class="number">240</span>, blue: <span class="number">233</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">69</span>, green: <span class="number">240</span>, blue: <span class="number">210</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">143</span>, green: <span class="number">238</span>, blue: <span class="number">147</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">220</span>, green: <span class="number">237</span>, blue: <span class="number">92</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">253</span>, green: <span class="number">237</span>, blue: <span class="number">74</span>, alpha: <span class="number">1.0</span>).cgColor</div><div class="line">    ]</div><div class="line">    <span class="keyword">let</span> frame1 = <span class="type">CGRect</span>(x: <span class="number">0</span>, y: <span class="number">0</span>, width: backCircle.width/<span class="number">2</span>, height: backCircle.height)</div><div class="line">    <span class="keyword">let</span> gradientLayer1 = <span class="type">CAGradientLayer</span>()</div><div class="line">    gradientLayer1.startPoint = <span class="type">CGPoint</span>(x: <span class="number">0.5</span>,y: <span class="number">0</span>)</div><div class="line">    gradientLayer1.endPoint = <span class="type">CGPoint</span>(x: <span class="number">0.5</span>,y: <span class="number">1</span>)</div><div class="line">    gradientLayer1.frame = frame1</div><div class="line">    gradientLayer1.colors = colors1</div><div class="line"></div><div class="line">    <span class="comment">//创建第二个gradientLayer</span></div><div class="line">    <span class="keyword">let</span> colors2 = [</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">253</span>, green: <span class="number">237</span>, blue: <span class="number">74</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">224</span>, green: <span class="number">238</span>, blue: <span class="number">59</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">148</span>, green: <span class="number">238</span>, blue: <span class="number">146</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        <span class="type">UIColor</span>.<span class="type">RGBA</span>(red: <span class="number">49</span>, green: <span class="number">240</span>, blue: <span class="number">233</span>, alpha: <span class="number">1.0</span>).cgColor,</div><div class="line">        ]</div><div class="line">    <span class="keyword">let</span> frame2 = <span class="type">CGRect</span>(x: backCircle.width/<span class="number">2</span>, y: <span class="number">0</span>, width: backCircle.width/<span class="number">2</span>, height: backCircle.height)</div><div class="line"></div><div class="line">    <span class="keyword">let</span> gradientLayer2 = <span class="type">CAGradientLayer</span>()</div><div class="line">    gradientLayer2.startPoint = <span class="type">CGPoint</span>(x: <span class="number">0.5</span>,y: <span class="number">1</span>)</div><div class="line">    gradientLayer2.endPoint = <span class="type">CGPoint</span>(x: <span class="number">0.5</span>,y: <span class="number">0</span>)</div><div class="line">    gradientLayer2.frame = frame2</div><div class="line">    gradientLayer2.colors = colors2</div><div class="line"></div><div class="line">    <span class="comment">//用一个gradientLayer来承接这两个渐变区域</span></div><div class="line">    gradientLayer.addSublayer(gradientLayer1)</div><div class="line">    gradientLayer.addSublayer(gradientLayer2)</div><div class="line">    <span class="comment">//用circle的path形状来截取渐变区域</span></div><div class="line">    gradientLayer.mask = circle</div><div class="line"></div><div class="line">    backCircle.layer.addSublayer(gradientLayer)</div></pre></td></tr></table></figure>
-<p>好了，一个带有渐变色的圆环画好了。通过这两篇总结，感觉对于渐变色layer的理解更加深刻了。<a href="https://github.com/15130886370/TMgradientLayer" target="_blank" rel="external">代码地址</a></p>
-
+<p>接上篇：<br>上篇实现了动画中的眼镜和金牌白光闪过的动效，这篇再来着重分析下圆弧动画。<br>
+        
+          <a class="article-more-a" href="/2017/08/24/CALayer动画之二CAShapeLayer画一个带渐变色的圆弧/#more">more >></a>
+        
       
 
       
@@ -968,6 +568,17 @@ label关联了哪个元素,你点击label文字,哪个元素就会响应)
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -1170,10 +781,180 @@ label关联了哪个元素,你点击label文字,哪个元素就会响应)
 
 
   
+    <article id="post-RxSwift 学习知识总结" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
   
-    <nav id="page-nav">
-      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
-    </nav>
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/01/20/RxSwift 学习知识总结/">RxSwift 学习知识总结</a>
+    </h1>
+  
+
+        
+        <a href="/2017/01/20/RxSwift 学习知识总结/" class="archive-article-date">
+  	<time datetime="2017-01-20T01:34:22.000Z" itemprop="datePublished">2017-01-20</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h4 id="一行一行看RxExample中的GitHubSignup例子"><a href="#一行一行看RxExample中的GitHubSignup例子" class="headerlink" title="一行一行看RxExample中的GitHubSignup例子"></a>一行一行看RxExample中的GitHubSignup例子</h4><p><strong>前言</strong>: RxSwift学习阶段总结一些心得,这几天看了<code>RxExample</code>中的<code>GitHubSignup</code>例子(我觉得,这个学习RxSwift很不错),由于水平有限,错误之处,还请指正.直接开始看demo吧,💊💊,切克闹~<br>
+        
+          <a class="article-more-a" href="/2017/01/20/RxSwift 学习知识总结/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">RxSwift</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/01/20/RxSwift 学习知识总结/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-RxSwift文档翻译(下)" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/01/20/RxSwift文档翻译(下)/">RxSwift 文档翻译(下)</a>
+    </h1>
+  
+
+        
+        <a href="/2017/01/20/RxSwift文档翻译(下)/" class="archive-article-date">
+  	<time datetime="2017-01-20T01:32:39.000Z" itemprop="datePublished">2017-01-20</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>接上回书:</p>
+<p>#关于操作符”shareReplay”<br>假如你需要多个观察者(<code>observer</code>)共享同一个订阅(<code>subscription</code>),那么你就要确定两件事情</p>
+<ul>
+<li>如果一个序列被一个新的订阅者订阅了,那该如何处理之前已经被接收的元素呢?(重播最后一个元素,还是所有的元素,亦或者是最后n个)</li>
+<li>如何决定何时触发被共享的订阅(subscripiton)呢?<br>通常情况下你会使用到<code>shareReplay</code>:
+        
+          <a class="article-more-a" href="/2017/01/20/RxSwift文档翻译(下)/#more">more >></a>
+        
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
+        		</li>
+      		 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">RxSwift</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/01/20/RxSwift文档翻译(下)/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
   
 
 
@@ -1272,6 +1053,14 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
              
               <li class="article-tag-list-item">
                 <a href="javascript:void(0)" class="js-tag color3">RxSwift</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color5">HTML</a>
+              </li>
+             
+              <li class="article-tag-list-item">
+                <a href="javascript:void(0)" class="js-tag color4">CSS</a>
               </li>
             
             <div class="clearfix"></div>
