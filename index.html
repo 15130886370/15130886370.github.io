@@ -150,13 +150,146 @@
           <div id="js-content" class="content-ll">
             
   
-    <article id="post-扒一扒swift中的unowned和weak下" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+    <article id="post-Swift3 多线程编程之GCD" class="article article-type-post  article-index" itemscope itemprop="blogPost">
   <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/09/12/Swift3 多线程编程之GCD/">Swift3 多线程编程之GCD</a>
+    </h1>
+  
+
+        
+        <a href="/2017/09/12/Swift3 多线程编程之GCD/" class="archive-article-date">
+  	<time datetime="2017-09-12T08:26:10.000Z" itemprop="datePublished">2017-09-12</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
     
     <div class="article-entry" itemprop="articleBody">
       
-        <p>#扒一扒Swift中的unowned和weak(下)</p>
-<blockquote>
+        <blockquote>
+<p>前言： 多线程编程对于一个iOS开发者来说非常重要。本文只针对GCD展开探讨，旨在应对一切开发中或者面试中遇到的GCD问题。</p>
+</blockquote>
+<h4 id="1-多线程的基本概念"><a href="#1-多线程的基本概念" class="headerlink" title="1.多线程的基本概念"></a>1.多线程的基本概念</h4><p><strong>线程：</strong><br>（thread）是组成进程的子单元，操作系统的调度器可以对线程进行单独的调度。实际上，所有的并发编程 API 都是构建于线程之上的 —— 包括 GCD 和操作队列（operation queues）。</p>
+<p><strong>单核与多核CPU操作系统下多线程的不同：</strong><br>多线程可以在单核 CPU 上同时（或者至少看作同时）运行。操作系统将小的时间片分配给每一个线程，这样就能够让用户感觉到有多个任务在同时进行。如果 CPU 是多核的，那么线程就可以真正的以并发方式被执行，从而减少了完成某项操作所需要的总时间。</p>
+<p><strong>线程生命周期：</strong></p>
+<pre><code>1. 新建：实例化线程对象
+2. 就绪： 向线程对象发送star消息，线程对象被加入可调度线程池中等待CPU调度。
+3. 运行： CPU负责调度线程池中可调度线程的执行。线程执行完成之前，状态可能会在就绪和运行之间来回切换。就绪和运行之间的状态变化都是由CPU负责，程序员不能干预
+4. 阻塞： 当满足某个预定条件时，可以使用休眠或锁，阻塞线程执行。sleepForTimeInterval（休眠指定时长），sleepUntilDate（休眠到指定日期），@synchronized(self)：（互斥锁）
+5. 死亡： 正常死亡，线程执行完毕。非正常死亡，当满足某个条件后，在线程内部中中止执行/在主线程中止线程对象。还有线程的 exit和cancel. 
+6. Thread.exit 一旦强行终止线程，后续的所有代码都不会执行。
+7. thread.cancel取消，并不会直接取消线程，只是给线程对象添加 isCancelled 标记
+</code></pre><p>####2. 线程的安全问题<br>多个线程访问同一块资源时，很容易引发数据错乱和数据安全问题。<br>解决方案：<br><strong>互斥锁（同步锁）</strong><br>@syncchronized(锁对象) {<br>    //需要锁定的代码<br>}<br>判断的时候锁对象要存在，如果代码中只有一个地方需要加锁，大多都使用self作为锁对象，这样可以避免单独再创建一个锁对象。<br>加了互斥锁的代码，当新线程访问时，如果发现其他线程正在执行锁定的代码，新线程就会进入休眠。<br><strong>自旋锁</strong><br>加了自旋锁，当新线程访问代码时，如果发现有其他线程正在锁定代码，新线程会用死循环的方式，一直等待锁定的代码执行完成。相当于不停尝试执行代码，比较消耗性能。</p>
+<p><strong>属性修饰atomic就是一把自旋锁。</strong></p>
+<p><strong>nonatomic:</strong> 非原子属性，同一时间可以有很多线程读和写。非线程安全的，不过效率更高，一般使用nonatomic。<br><strong>atomic:</strong> 原子属性（线程安全），保证同一时间只有一个线程能够写入（但是同一时间多个线程都可以取值），需要耗费大量资源。</p>
+<p>####3.GCD的理解和使用<br><strong>GCD的特点：</strong><br>GCD会自动利用更多的CPU内核<br>GCD自动管理线程的生命周期（创建线程，调度任务，销毁线程等）<br>程序员只需要告诉 GCD 想要如何执行什么任务，不需要编写任何线程管理代码</p>
+<p><strong>GCD的基本概念：</strong><br>    <strong>任务（block）</strong>：任务就是将要在线程中执行的代码，将这段代码用block封装好，然后将这个任务添加到指定的执行方式（同步执行和异步执行），等待CPU从队列中取出任务放到对应的线程中执行。<br>    <strong>同步（sync）</strong>：一个接着一个，前一个没有执行完，后面不能执行，不开线程<br>    <strong>异步（async）</strong>：开启多个新线程，任务同一时间可以一起执行。异步是多线程的代名词<br>    <strong>队列</strong>：装载线程任务的队形结构。(系统以先进先出的方式调度队列中的任务执行)。在GCD中有两种队列：串行队列和并发队列<br>    <strong>并发队列</strong>：线程可以同时一起进行执行。实际上是CPU在多条线程之间快速的切换。（并发功能只有在异步（dispatch_async）函数下才有效）<br>    <strong>串行队列</strong>：线程只能依次有序的执行<br>   下面是代码：<br><strong>由于篇幅限制，就不贴执行结果了，如果有兴趣不妨自己写来看看</strong><br><figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//串行同步：任务在主线程上按顺序执行，不能开子线程</span></div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">serialSync</span><span class="params">()</span></span> &#123;</div><div class="line">        <span class="keyword">let</span> queue1 = <span class="type">DispatchQueue</span>(label: <span class="string">"com.ittmom1.www"</span>)</div><div class="line">        <span class="keyword">let</span> queue2 = <span class="type">DispatchQueue</span>(label: <span class="string">"com.ittmom2.www"</span>)</div><div class="line">        queue1.sync &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">0</span> ..&lt; <span class="number">10</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔴"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        queue1.sync &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">100</span> ..&lt; <span class="number">110</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔴"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        queue2.sync &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">1000</span> ..&lt; <span class="number">1010</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔵"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">                </div><div class="line">    &#125;</div></pre></td></tr></table></figure></p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//串行异步，一个队列可以开一条子线程，</span></div><div class="line"><span class="comment">//同一个队列任务按顺序执行，不同队列</span></div><div class="line"><span class="comment">//的任务可异步执行</span></div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">serialAsync</span><span class="params">()</span></span> &#123;</div><div class="line">        <span class="keyword">let</span> queue1 = <span class="type">DispatchQueue</span>(label: <span class="string">"com.ittmom1.www"</span>)</div><div class="line">        <span class="keyword">let</span> queue2 = <span class="type">DispatchQueue</span>(label: <span class="string">"com.ittmom2.www"</span>)</div><div class="line">        </div><div class="line">        queue1.async &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">0</span> ..&lt; <span class="number">10</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔴"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        queue1.async &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">100</span> ..&lt; <span class="number">110</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔴"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        queue2.async &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">1000</span> ..&lt; <span class="number">1010</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔵"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//并发同步，不能开新线程，所有任务按顺序在主线程完成</span></div><div class="line"><span class="comment">//结论： 同步执行的任务所在的队列，不管是串行还是并发</span></div><div class="line"><span class="comment">//都不能开启新线程（所以这并没有什么卵用）</span></div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">concurrentSync</span><span class="params">()</span></span> &#123;</div><div class="line">        <span class="keyword">let</span> queue1 = <span class="type">DispatchQueue</span>(label: <span class="string">"com.ittmom1.www"</span>,attributes: .concurrent)</div><div class="line">        <span class="keyword">let</span> queue2 = <span class="type">DispatchQueue</span>(label: <span class="string">"com.ittmom2.www"</span>,attributes: .concurrent)</div><div class="line">        queue1.sync &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">0</span> ..&lt; <span class="number">10</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔴"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        queue1.sync &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">100</span> ..&lt; <span class="number">110</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔴"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        queue2.sync &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">1000</span> ..&lt; <span class="number">1010</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔵"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        queue2.sync &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">10000</span> ..&lt; <span class="number">10010</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔵"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="comment">//并发异步： 不同队列并发执行</span></div><div class="line"><span class="comment">//一条队列可以同时开启多条线程，同一队列多个不同任务异步执行</span></div><div class="line">    <span class="function"><span class="keyword">func</span> <span class="title">concurrentAsync</span><span class="params">()</span></span> &#123;</div><div class="line">        <span class="keyword">let</span> queue1 = <span class="type">DispatchQueue</span>(label: <span class="string">"com.ittmom1.www"</span>,attributes: .concurrent)</div><div class="line">        <span class="keyword">let</span> queue2 = <span class="type">DispatchQueue</span>(label: <span class="string">"com.ittmom2.www"</span>,attributes: .concurrent)</div><div class="line">        queue1.async &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">0</span> ..&lt; <span class="number">10</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔴"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        queue1.async &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">100</span> ..&lt; <span class="number">110</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔴"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">        </div><div class="line">        queue2.async &#123;</div><div class="line">            <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">1000</span> ..&lt; <span class="number">1010</span> &#123;</div><div class="line">                <span class="built_in">print</span>(<span class="string">"🔵"</span>,i,<span class="type">Thread</span>.current)</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p><strong>GCD基础部分总结（可以说，看懂了这里，再也不用发愁面试被问到同步异步的区别了）：</strong><br>串行队列同步执行，不开启线程（主线程中执行任务），代码从上往下按顺序执行。<br>串行队列异步执行，每个队列可以开启一条线程，相同队列的不同任务串行执行。不同队列可以实现异步执行。<br>并发队列同步执行，不开启线程（主线程中执行任务），代码从上往下按顺序执行。<br>并发队列异步执行，同一个队列可以开启多条线程，线程可以同时执行多个任务。</p>
+<p>####4. GCD的高级用法（精华）<br><strong>4.1 利用initiallyInactive手动触发执行任务</strong></p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">var</span> inactiveQueue: <span class="type">DispatchQueue</span>?</div><div class="line">    </div><div class="line"><span class="function"><span class="keyword">func</span> <span class="title">concurrentQueue</span><span class="params">()</span></span> &#123;</div><div class="line"><span class="keyword">let</span> anotherQueue = <span class="type">DispatchQueue</span>.<span class="keyword">init</span>(label: <span class="string">"anotherQueue"</span>, qos: .utility, attributes: [.initiallyInactive, .concurrent])</div><div class="line">inactiveQueue = anotherQueue</div><div class="line">   </div><div class="line">anotherQueue.async &#123;</div><div class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">0</span> ..&lt; <span class="number">10</span> &#123;</div><div class="line">      <span class="comment">//sleep(1)</span></div><div class="line">      <span class="built_in">print</span>(<span class="string">"queue1 （1）"</span>,i, <span class="type">Thread</span>.current)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">   </div><div class="line">anotherQueue.async &#123;</div><div class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">100</span> ..&lt; <span class="number">110</span> &#123;</div><div class="line">      <span class="comment">//sleep(1)</span></div><div class="line">      <span class="built_in">print</span>(<span class="string">"queue1 (2)"</span>,i, <span class="type">Thread</span>.current)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">   </div><div class="line">anotherQueue.async &#123;</div><div class="line">  <span class="keyword">for</span> i <span class="keyword">in</span> <span class="number">1000</span> ..&lt; <span class="number">1010</span> &#123;</div><div class="line">      <span class="comment">//sleep(1)</span></div><div class="line">      <span class="built_in">print</span>(<span class="string">"queue1 （3）"</span>,i, <span class="type">Thread</span>.current)</div><div class="line">  &#125;</div><div class="line">  </div><div class="line">&#125;</div><div class="line">   </div><div class="line">   </div><div class="line">&#125;</div><div class="line"><span class="keyword">override</span> <span class="function"><span class="keyword">func</span> <span class="title">viewDidAppear</span><span class="params">(<span class="number">_</span> animated: Bool)</span></span> &#123;</div><div class="line"><span class="built_in">print</span>(<span class="string">"viewDidAppear"</span>)</div><div class="line"><span class="keyword">super</span>.viewDidAppear(animated)</div><div class="line">concurrentQueue()</div><div class="line"></div><div class="line"><span class="keyword">if</span> <span class="keyword">let</span> queue = inactiveQueue &#123;</div><div class="line">  queue.activate()</div><div class="line">&#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>4.2 DispatchGroup的使用</strong><br>如果想在dispatch_queue中所有任务执行完成之后再做某些操作，可以使用DispatchGroup。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> group = <span class="type">DispatchGroup</span>()</div><div class="line">   </div><div class="line"><span class="keyword">let</span> queue1 = <span class="type">DispatchQueue</span>(label: <span class="string">"task1"</span>)</div><div class="line">queue1.async(group: group)&#123;</div><div class="line">  <span class="keyword">for</span> <span class="number">_</span> <span class="keyword">in</span> <span class="number">1</span> ..&lt; <span class="number">10</span> &#123;</div><div class="line">      sleep(<span class="number">1</span>)</div><div class="line">      <span class="keyword">let</span> date = <span class="type">NSDate</span>()</div><div class="line">      <span class="built_in">print</span>(<span class="string">"🔴"</span>,<span class="type">Thread</span>.current,date)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">   </div><div class="line"><span class="keyword">let</span> queue2 = <span class="type">DispatchQueue</span>(label: <span class="string">"task2"</span>)</div><div class="line">queue2.async(group: group) &#123;</div><div class="line">  <span class="keyword">self</span>.delay(<span class="number">2</span>, &#123; </div><div class="line">      <span class="built_in">print</span>(<span class="string">"🔵"</span>,<span class="type">Thread</span>.current)</div><div class="line">  &#125;)</div><div class="line">&#125;</div><div class="line">   </div><div class="line">group.notify(queue: <span class="type">DispatchQueue</span>.main) &#123;</div><div class="line">  <span class="keyword">let</span> date = <span class="type">NSDate</span>()</div><div class="line">  <span class="built_in">print</span>(<span class="string">"task1,task2任务完成"</span>,date)</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p><strong>wait</strong>: 如果组里有多个并发队列存在，调用wait可以在任务执行完毕以后再继续执行代码，wait可以阻塞当前线程，等待执行结果。</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> group = <span class="type">DispatchGroup</span>()</div><div class="line"><span class="keyword">let</span> queue1 = <span class="type">DispatchQueue</span>.<span class="keyword">init</span>(label: <span class="string">"com.ittmom1.www"</span>, qos: .userInitiated, attributes: .concurrent)</div><div class="line"><span class="keyword">let</span> queue2 = <span class="type">DispatchQueue</span>.<span class="keyword">init</span>(label: <span class="string">"com.ittmom2.www"</span>, qos: .userInitiated, attributes: .concurrent)</div><div class="line">   </div><div class="line">queue1.async(group: group) &#123;</div><div class="line">  sleep(<span class="number">2</span>)</div><div class="line">  <span class="type">NSLog</span>(<span class="string">"队列一任务执行完成"</span>,<span class="type">Thread</span>.current)</div><div class="line">&#125;</div><div class="line">   </div><div class="line">queue2.async(group: group) &#123;</div><div class="line">  sleep(<span class="number">1</span>)</div><div class="line">  <span class="type">NSLog</span>(<span class="string">"队列二任务执行完成"</span>, <span class="type">Thread</span>.current)</div><div class="line">&#125;</div><div class="line">   </div><div class="line"><span class="type">NSLog</span>(<span class="string">"等待前"</span>)</div><div class="line"><span class="comment">//这里wait方法返回值是 DispatchTimeoutResult ，是一个枚举</span></div><div class="line"><span class="comment">// success: 在指定时间内完成任务</span></div><div class="line"><span class="comment">// timedOut: 超过指定时间完成任务，即 超时</span></div><div class="line"><span class="keyword">let</span> result = group.wait(timeout:.now() + .seconds(<span class="number">3</span>))</div><div class="line">   </div><div class="line"><span class="type">NSLog</span>(<span class="string">"等待后"</span>)</div><div class="line">   </div><div class="line"><span class="type">NSLog</span>(<span class="string">"队列外任务执行"</span>, <span class="type">Thread</span>.current)</div><div class="line">   </div><div class="line">group.notify(queue: <span class="type">DispatchQueue</span>.main) &#123;</div><div class="line">  <span class="keyword">switch</span> result &#123;</div><div class="line">  <span class="keyword">case</span> .success: <span class="type">NSLog</span>(<span class="string">"任务完成，没有超时"</span>,<span class="type">Thread</span>.current)</div><div class="line">  <span class="keyword">case</span> .timedOut: <span class="type">NSLog</span>(<span class="string">"任务完成，超时"</span>,<span class="type">Thread</span>.current)</div><div class="line">  &#125;</div><div class="line">&#125;</div><div class="line">执行结果: </div><div class="line"><span class="number">2017</span>-<span class="number">09</span>-<span class="number">11</span> <span class="number">10</span>:<span class="number">50</span>:<span class="number">32.765867</span>+<span class="number">0800</span> <span class="type">Dispatch_Test</span>[<span class="number">4480</span>:<span class="number">4020080</span>] 等待前</div><div class="line"><span class="number">2017</span>-<span class="number">09</span>-<span class="number">11</span> <span class="number">10</span>:<span class="number">50</span>:<span class="number">33.774021</span>+<span class="number">0800</span> <span class="type">Dispatch_Test</span>[<span class="number">4480</span>:<span class="number">4020114</span>] 队列二任务执行完成</div><div class="line"><span class="number">2017</span>-<span class="number">09</span>-<span class="number">11</span> <span class="number">10</span>:<span class="number">50</span>:<span class="number">34.767320</span>+<span class="number">0800</span> <span class="type">Dispatch_Test</span>[<span class="number">4480</span>:<span class="number">4020080</span>] 等待后</div><div class="line"><span class="number">2017</span>-<span class="number">09</span>-<span class="number">11</span> <span class="number">10</span>:<span class="number">50</span>:<span class="number">34.767569</span>+<span class="number">0800</span> <span class="type">Dispatch_Test</span>[<span class="number">4480</span>:<span class="number">4020080</span>] 队列外任务执行</div><div class="line"><span class="number">2017</span>-<span class="number">09</span>-<span class="number">11</span> <span class="number">10</span>:<span class="number">50</span>:<span class="number">34.781383</span>+<span class="number">0800</span> <span class="type">Dispatch_Test</span>[<span class="number">4480</span>:<span class="number">4020113</span>] 队列一任务执行完成</div><div class="line"><span class="number">2017</span>-<span class="number">09</span>-<span class="number">11</span> <span class="number">10</span>:<span class="number">50</span>:<span class="number">34.810031</span>+<span class="number">0800</span> <span class="type">Dispatch_Test</span>[<span class="number">4480</span>:<span class="number">4020080</span>] 任务完成，超时</div></pre></td></tr></table></figure>
+<p><strong>4.3 Semaphore 信号量</strong><br>用于控制资源被多次访问的情况，保证线程安全的统计数量。<br>举个栗子： 一个女神可以同时和两个备胎谈恋爱，如果有第三个备胎想插进来，需要等其中一个备胎没钱了，养不起女神了，才能轮得到你。当然，这没有前后顺序，谁不行了，谁撤…</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> semaphore = <span class="type">DispatchSemaphore</span>.<span class="keyword">init</span>(value: <span class="number">2</span>)</div><div class="line">        </div><div class="line"><span class="keyword">let</span> queue1 = <span class="type">DispatchQueue</span>.<span class="keyword">init</span>(label: <span class="string">"semaphore1"</span>, qos: .userInitiated, attributes: .concurrent)</div><div class="line">   </div><div class="line">queue1.async &#123;</div><div class="line">  semaphore.wait()</div><div class="line">  <span class="built_in">print</span>(<span class="string">"第一个备胎和女神嘿嘿嘿"</span>)</div><div class="line">  sleep(<span class="number">1</span>)</div><div class="line">  <span class="built_in">print</span>(<span class="string">"第一个备胎没钱了，可以滚了"</span>)</div><div class="line">  semaphore.signal()</div><div class="line">&#125;</div><div class="line">   </div><div class="line">queue1.async &#123;</div><div class="line">  semaphore.wait()</div><div class="line">  <span class="built_in">print</span>(<span class="string">"第二个备胎和女神嘿嘿嘿"</span>)</div><div class="line">  sleep(<span class="number">2</span>)</div><div class="line">  <span class="built_in">print</span>(<span class="string">"第二个备胎没钱了，可以滚了"</span>)</div><div class="line">  semaphore.signal()</div><div class="line">&#125;</div><div class="line">   </div><div class="line">queue1.async &#123;</div><div class="line">  semaphore.wait()</div><div class="line">  <span class="built_in">print</span>(<span class="string">"终于轮到老子了"</span>)</div><div class="line">  semaphore.signal()</div><div class="line">&#125;</div><div class="line">执行结果:</div><div class="line">第一个备胎和女神嘿嘿嘿</div><div class="line">第二个备胎和女神嘿嘿嘿</div><div class="line">第一个备胎没钱了，可以滚了</div><div class="line">终于轮到老子了</div><div class="line">第二个备胎没钱了，可以滚了</div></pre></td></tr></table></figure>
+<p><strong>4.4 Barrier</strong><br>保证一个队列里的前一个任务执行完毕以后，才执行后面的任务。<br>举个栗子： 就拿翟欣欣骗婚的事情说，欣欣童鞋要通过世纪佳缘网骗老实人和她结婚，然后一边搜集老实人的把柄，一边跟公安局的舅舅密谋勒索老实人的财产。但是欣欣童鞋只可能保证跟老实人结婚以后才能做后续的工作，所以，这时候我们要用到Barrier</p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">let</span> queue1 = <span class="type">DispatchQueue</span>.<span class="keyword">init</span>(label: <span class="string">"semaphore1"</span>, qos: .userInitiated, attributes: .concurrent)</div><div class="line">   </div><div class="line">queue1.async(flags: .barrier) &#123;</div><div class="line">  <span class="built_in">print</span>(<span class="string">"通过世纪佳缘网寻找老实人"</span>)</div><div class="line">  </div><div class="line">  sleep(<span class="number">2</span>)</div><div class="line">  <span class="built_in">print</span>(<span class="string">"和老实人结婚"</span>)</div><div class="line">&#125;</div><div class="line">   </div><div class="line">queue1.async &#123;</div><div class="line">  <span class="built_in">print</span>(<span class="string">"搜集老实人的把柄"</span>)</div><div class="line">  </div><div class="line">  sleep(<span class="number">2</span>)</div><div class="line">  <span class="built_in">print</span>(<span class="string">"找到老实人漏税和灰色经营的证据"</span>)</div><div class="line">&#125;</div><div class="line">   </div><div class="line">queue1.async &#123;</div><div class="line">  <span class="built_in">print</span>(<span class="string">"联系公安局的舅舅"</span>)</div><div class="line">  </div><div class="line">  sleep(<span class="number">2</span>)</div><div class="line">  <span class="built_in">print</span>(<span class="string">"和舅舅一起敲诈勒索老实人"</span>)</div><div class="line">&#125;</div><div class="line"></div><div class="line">执行结果：</div><div class="line">通过世纪佳缘网寻找老实人</div><div class="line">和老实人结婚</div><div class="line">搜集老实人的把柄</div><div class="line">联系公安局的舅舅</div><div class="line">找到老实人漏税和灰色经营的证据</div><div class="line">和舅舅一起敲诈勒索老实人</div></pre></td></tr></table></figure>
+<p><strong>4.5 延时执行</strong></p>
+<figure class="highlight swift"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="type">DispatchQueue</span>.main.asyncAfter(deadline: <span class="type">DispatchTime</span>.now() + time, execute: &#123;</div><div class="line">    <span class="comment">//执行任务</span></div><div class="line">&#125;)</div></pre></td></tr></table></figure>
+<p>####5. 写在最后<br>看完此文，面试无忧<br>本文参考链接：<br> <a href="http://swift.gg/2016/11/30/grand-central-dispatch/" target="_blank" rel="external"><a href="http://swift.gg/2016/11/30/grand-central-dispatch/" target="_blank" rel="external">Swift 3 中的 GCD 与 Dispatch Queue</a></a><br><a href="http://blog.csdn.net/Hello_Hwc/article/details/54293280" target="_blank" rel="external"> <a href="http://blog.csdn.net/hello_hwc/article/details/54293280" target="_blank" rel="external">GCD精讲（Swift 3）</a></a></p>
+<p>本文所有有关代码（如果帮到你了，也请帮忙点个star）：<br><a href="https://github.com/15130886370/Dispatch_Test" target="_blank" rel="external">demo地址</a></p>
+
+      
+
+      
+    </div>
+    <div class="article-info article-info-index">
+      
+      
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
+      
+
+      
+        <p class="article-more-link">
+          <a class="article-more-a" href="/2017/09/12/Swift3 多线程编程之GCD/">展开全文 >></a>
+        </p>
+      
+
+      
+      <div class="clearfix"></div>
+    </div>
+  </div>
+</article>
+
+<aside class="wrap-side-operation">
+    <div class="mod-side-operation">
+        
+        <div class="jump-container" id="js-jump-container" style="display:none;">
+            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
+                <i class="icon-font icon-back"></i>
+            </a>
+            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
+                <i class="icon-font icon-plane jump-plane"></i>
+            </div>
+        </div>
+        
+        
+    </div>
+</aside>
+
+
+
+
+  
+    <article id="post-扒一扒swift中的unowned和weak下" class="article article-type-post  article-index" itemscope itemprop="blogPost">
+  <div class="article-inner">
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/2017/08/30/扒一扒swift中的unowned和weak下/">扒一扒Swift中的unowned和weak(下)</a>
+    </h1>
+  
+
+        
+        <a href="/2017/08/30/扒一扒swift中的unowned和weak下/" class="archive-article-date">
+  	<time datetime="2017-08-30T01:41:02.000Z" itemprop="datePublished">2017-08-30</time>
+  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
+      view <span id="busuanzi_value_page_pv"></span> times
+    </span>
+</a>
+<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
+</script>
+        
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <blockquote>
 <p>上一篇写到了swift中引起Reference cycle(循环引用)的原因,和一些不同场景下处理的办法,那这篇我就来叨叨下平时项目里会经常遇到的Closuer(闭包)里引用self对象的处理办法<br>
         
           <a class="article-more-a" href="/2017/08/30/扒一扒swift中的unowned和weak下/#more">more >></a>
@@ -168,6 +301,17 @@
     <div class="article-info article-info-index">
       
       
+	<div class="article-tag tagcloud">
+		<i class="icon-price-tags icon"></i>
+		<ul class="article-tag-list">
+			 
+        		<li class="article-tag-list-item">
+        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
+        		</li>
+      		
+		</ul>
+	</div>
+
       
 
       
@@ -871,95 +1015,10 @@
 
 
   
-    <article id="post-RxSwift文档翻译(下)" class="article article-type-post  article-index" itemscope itemprop="blogPost">
-  <div class="article-inner">
-    
-      <header class="article-header">
-        
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/2017/01/20/RxSwift文档翻译(下)/">RxSwift 文档翻译(下)</a>
-    </h1>
-  
-
-        
-        <a href="/2017/01/20/RxSwift文档翻译(下)/" class="archive-article-date">
-  	<time datetime="2017-01-20T01:32:39.000Z" itemprop="datePublished">2017-01-20</time>
-  	<span id="busuanzi_container_page_pv" style="color:DarkGray">
-      view <span id="busuanzi_value_page_pv"></span> times
-    </span>
-</a>
-<script async src="//dn-lbstatics.qbox.me/busuanzi/2.3/busuanzi.pure.mini.js">
-</script>
-        
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>接上回书:</p>
-<p>#关于操作符”shareReplay”<br>假如你需要多个观察者(<code>observer</code>)共享同一个订阅(<code>subscription</code>),那么你就要确定两件事情</p>
-<ul>
-<li>如果一个序列被一个新的订阅者订阅了,那该如何处理之前已经被接收的元素呢?(重播最后一个元素,还是所有的元素,亦或者是最后n个)</li>
-<li>如何决定何时触发被共享的订阅(subscripiton)呢?<br>通常情况下你会使用到<code>shareReplay</code>:
-        
-          <a class="article-more-a" href="/2017/01/20/RxSwift文档翻译(下)/#more">more >></a>
-        
-      
-
-      
-    </div>
-    <div class="article-info article-info-index">
-      
-      
-	<div class="article-tag tagcloud">
-		<i class="icon-price-tags icon"></i>
-		<ul class="article-tag-list">
-			 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color1">Swift</a>
-        		</li>
-      		 
-        		<li class="article-tag-list-item">
-        			<a href="javascript:void(0)" class="js-tag article-tag-list-link color3">RxSwift</a>
-        		</li>
-      		
-		</ul>
-	</div>
-
-      
-
-      
-        <p class="article-more-link">
-          <a class="article-more-a" href="/2017/01/20/RxSwift文档翻译(下)/">展开全文 >></a>
-        </p>
-      
-
-      
-      <div class="clearfix"></div>
-    </div>
-  </div>
-</article>
-
-<aside class="wrap-side-operation">
-    <div class="mod-side-operation">
-        
-        <div class="jump-container" id="js-jump-container" style="display:none;">
-            <a href="javascript:void(0)" class="mod-side-operation__jump-to-top">
-                <i class="icon-font icon-back"></i>
-            </a>
-            <div id="js-jump-plan-container" class="jump-plan-container" style="top: -11px;">
-                <i class="icon-font icon-plane jump-plane"></i>
-            </div>
-        </div>
-        
-        
-    </div>
-</aside>
-
-
-
-
-  
+    <nav id="page-nav">
+      <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">Next &raquo;</a>
+    </nav>
   
 
 
@@ -1061,11 +1120,11 @@ return o(i(t),arguments.length<2?void 0:u(arguments[1]))}})},function(t,n,r){var
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color4">CSS</a>
+                <a href="javascript:void(0)" class="js-tag color5">HTML</a>
               </li>
              
               <li class="article-tag-list-item">
-                <a href="javascript:void(0)" class="js-tag color5">HTML</a>
+                <a href="javascript:void(0)" class="js-tag color4">CSS</a>
               </li>
             
             <div class="clearfix"></div>
