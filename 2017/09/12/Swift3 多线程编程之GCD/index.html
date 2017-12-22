@@ -8,18 +8,18 @@
   <link rel="dns-prefetch" href="http://yoursite.com">
   <title>Swift3 多线程编程之GCD | 一江春水</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="前言： 多线程编程对于一个iOS开发者来说非常重要。本文只针对GCD展开探讨，旨在应对一切开发中或者面试中遇到的GCD问题。  1.多线程的基本概念线程：（thread）是组成进程的子单元，操作系统的调度器可以对线程进行单独的调度。实际上，所有的并发编程 API 都是构建于线程之上的 —— 包括 GCD 和操作队列（operation queues）。 单核与多核CPU操作系统下多线程的不同：多">
+  <meta name="description" content="前言： 多线程编程对于一个iOS开发者来说非常重要。本文只针对GCD展开探讨，旨在应对一切开发中或者面试中遇到的GCD问题。">
 <meta name="keywords" content="Swift">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Swift3 多线程编程之GCD">
 <meta property="og:url" content="http://yoursite.com/2017/09/12/Swift3 多线程编程之GCD/index.html">
 <meta property="og:site_name" content="一江春水">
-<meta property="og:description" content="前言： 多线程编程对于一个iOS开发者来说非常重要。本文只针对GCD展开探讨，旨在应对一切开发中或者面试中遇到的GCD问题。  1.多线程的基本概念线程：（thread）是组成进程的子单元，操作系统的调度器可以对线程进行单独的调度。实际上，所有的并发编程 API 都是构建于线程之上的 —— 包括 GCD 和操作队列（operation queues）。 单核与多核CPU操作系统下多线程的不同：多">
+<meta property="og:description" content="前言： 多线程编程对于一个iOS开发者来说非常重要。本文只针对GCD展开探讨，旨在应对一切开发中或者面试中遇到的GCD问题。">
 <meta property="og:locale" content="Chinese">
-<meta property="og:updated_time" content="2017-12-22T08:20:40.000Z">
+<meta property="og:updated_time" content="2017-12-22T08:30:49.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Swift3 多线程编程之GCD">
-<meta name="twitter:description" content="前言： 多线程编程对于一个iOS开发者来说非常重要。本文只针对GCD展开探讨，旨在应对一切开发中或者面试中遇到的GCD问题。  1.多线程的基本概念线程：（thread）是组成进程的子单元，操作系统的调度器可以对线程进行单独的调度。实际上，所有的并发编程 API 都是构建于线程之上的 —— 包括 GCD 和操作队列（operation queues）。 单核与多核CPU操作系统下多线程的不同：多">
+<meta name="twitter:description" content="前言： 多线程编程对于一个iOS开发者来说非常重要。本文只针对GCD展开探讨，旨在应对一切开发中或者面试中遇到的GCD问题。">
   
     <link rel="alternative" href="/atom.xml" title="一江春水" type="application/atom+xml">
   
@@ -175,9 +175,9 @@
     <div class="article-entry" itemprop="articleBody">
       
         <blockquote>
-<p>前言： 多线程编程对于一个iOS开发者来说非常重要。本文只针对GCD展开探讨，旨在应对一切开发中或者面试中遇到的GCD问题。</p>
-</blockquote>
+<p>前言： 多线程编程对于一个iOS开发者来说非常重要。本文只针对GCD展开探讨，旨在应对一切开发中或者面试中遇到的GCD问题。<br><a id="more"></a></p>
 <h4 id="1-多线程的基本概念"><a href="#1-多线程的基本概念" class="headerlink" title="1.多线程的基本概念"></a>1.多线程的基本概念</h4><p><strong>线程：</strong><br>（thread）是组成进程的子单元，操作系统的调度器可以对线程进行单独的调度。实际上，所有的并发编程 API 都是构建于线程之上的 —— 包括 GCD 和操作队列（operation queues）。</p>
+</blockquote>
 <p><strong>单核与多核CPU操作系统下多线程的不同：</strong><br>多线程可以在单核 CPU 上同时（或者至少看作同时）运行。操作系统将小的时间片分配给每一个线程，这样就能够让用户感觉到有多个任务在同时进行。如果 CPU 是多核的，那么线程就可以真正的以并发方式被执行，从而减少了完成某项操作所需要的总时间。</p>
 <p><strong>线程生命周期：</strong></p>
 <pre><code>1. 新建：实例化线程对象
